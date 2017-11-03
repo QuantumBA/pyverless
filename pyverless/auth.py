@@ -4,7 +4,10 @@ from pyverless.config import settings
 
 
 def get_user_model():
-    module, user_model = settings.USER_MODEL.rsplit('.', 1)
+    try:
+        module, user_model = settings.USER_MODEL.rsplit('.', 1)
+    except AttributeError:
+        raise AttributeError('USER_MODEL configuration variable not set or invalid')
     return getattr(importlib.import_module(module), user_model)
 
 
