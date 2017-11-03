@@ -1,0 +1,21 @@
+# Distribution / packaging
+.Python
+env/
+build/
+develop-eggs/
+dist/
+lib/
+lib64/
+vendored/
+downloads/
+eggs/
+.eggs/
+.cache/
+__pycache__/
+*.pyc
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Coverate
+htmlcov/
