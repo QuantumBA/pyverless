@@ -205,8 +205,11 @@ class RetrieveHandler(ObjectMixin, BaseHandler):
 
     success_code = 200
 
+    def serialize(self, instance):
+        return self.serializer(instance=instance).data
+
     def perform_action(self):
-        data = self.serializer(instance=self.object).data if self.object else None
+        data = self.serialize(self.object) if self.object else None
 
         return data
 
@@ -215,11 +218,14 @@ class ListHandler(ListMixin, BaseHandler):
 
     success_code = 200
 
+    def serialize(self, instance):
+        return self.serializer(instance=instance).data
+
     def perform_action(self):
         _list = []
 
         for obj in self.get_nodeset().all():
-            _list.append(self.serializer(instance=obj).data)
+            _list.append(self.serialize(obj))
 
         return _list
 
