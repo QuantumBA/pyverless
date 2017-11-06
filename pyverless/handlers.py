@@ -21,7 +21,8 @@ class RequestBodyMixin(object):
         body = {}
         missing_keys = []
 
-        # Collect all keys and values. Also missing keys.
+        # Collect all required keys and values. Collected missing keys are
+        # reported as an error.
         for key in self.required_body_keys:
             try:
                 body[key] = json.loads(self.event['body'])[key]
@@ -31,6 +32,16 @@ class RequestBodyMixin(object):
         if missing_keys:
             self.error = ("Missing key(s): %s" % ', '.join(missing_keys), 400)
             raise Exception
+
+        # Collect all optional keys and values.
+        for key in self.optional_body_keys:
+            try:
+                body[key] = json.loads(self.event['body'])[key]
+            except json.decoder.JSONDecodeError:
+                self.error = ("Malformed body", 400)
+                raise
+            except KeyError:
+                pass
 
         return body
 
@@ -89,9 +100,20 @@ class BaseHandler(object):
             self.context = context
             self.error = None
 
-            # Try to get the user (that is, the handler uses AuthorizationMixin)
+            # set user, object and/or body (that is, if the handler users the
+            # apropiate mixin and the method is avaliable
             try:
                 self.user = self.get_user()
+            except Exception:
+                pass
+
+            try:
+                self.object = self.get_object()
+            except Exception:
+                pass
+
+            try:
+                self.body = self.get_body()
             except Exception:
                 pass
 
@@ -169,8 +191,7 @@ class CreateHandler(RequestBodyMixin, BaseHandler):
     success_code = 201
 
     def create_object(self):
-        body = self.get_body()
-        obj = self.model(**body).save()
+        obj = self.model(**self.body).save()
 
         return obj
 
@@ -185,8 +206,7 @@ class RetrieveHandler(ObjectMixin, BaseHandler):
     success_code = 200
 
     def perform_action(self):
-        obj = self.get_object()
-        data = self.serializer(instance=obj).data if obj else None
+        data = self.serializer(instance=self.object).data if self.object else None
 
         return data
 
@@ -209,15 +229,13 @@ class UpdateHandler(RequestBodyMixin, ObjectMixin, BaseHandler):
     success_code = 200
 
     def perform_action(self):
-        body = self.get_body()
-        obj = self.get_object()
 
-        for key, value in body.items():
-            setattr(obj, key, value)
+        for key, value in self.body.items():
+            setattr(self.object, key, value)
 
-        obj.save()
+        self.object.save()
 
-        return body
+        return self.body
 
 
 class DeleteHandler(ObjectMixin, BaseHandler):
@@ -225,7 +243,6 @@ class DeleteHandler(ObjectMixin, BaseHandler):
     success_code = 204
 
     def perform_action(self):
-        obj = self.get_object()
-        obj.delete()
+        self.object.delete()
 
         return {}
