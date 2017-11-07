@@ -1,7 +1,6 @@
 from functools import wraps
-from os import getenv
 
-log_warmup = getenv('WARMUP_LOG')
+from pyverless.config import settings
 
 
 def warmup(func):
@@ -14,7 +13,7 @@ def warmup(func):
         event = args[0]
 
         if event.get('source') == 'serverless-plugin-warmup':
-            if log_warmup:
+            if settings.WARMUP_LOG:
                 print('warmup sucessful')
             return None
 

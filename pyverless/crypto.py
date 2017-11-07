@@ -1,4 +1,3 @@
-from os import getenv
 import base64
 from calendar import timegm
 import hashlib
@@ -11,13 +10,8 @@ from datetime import datetime
 from pyverless.exceptions import Unauthorized
 from pyverless.config import settings
 
-JWT_EXPIRY = settings.JWT_EXPIRY
-JWT_LEEWAY = settings.JWT_LEEWAY
-SECRET_KEY = settings.SECRET_KEY
-JWT_ALGORITHM = settings.JWT_ALGORITHM
 
-
-def get_json_web_token(payload, expires=True, expiry=JWT_EXPIRY):
+def get_json_web_token(payload, expires=True, expiry=settings.JWT_EXPIRY):
     """
     Returns a JWT given a payload.
     """
@@ -27,15 +21,15 @@ def get_json_web_token(payload, expires=True, expiry=JWT_EXPIRY):
         now = timegm(datetime.utcnow().utctimetuple())
         payload['exp'] = now + expiry
 
-    return jwt.encode(payload, SECRET_KEY, JWT_ALGORITHM).decode('utf-8')
+    return jwt.encode(payload, settings.SECRET_KEY, settings.JWT_ALGORITHM).decode('utf-8')
 
 
-def decode_json_web_token(token, leeway=JWT_LEEWAY):
+def decode_json_web_token(token, leeway=settings.JWT_LEEWAY):
     """
     Decode a JWT. Leeway time may be provided.
     """
     try:
-        decoded = jwt.decode(token, SECRET_KEY, leeway=leeway, algorithms=[JWT_ALGORITHM])
+        decoded = jwt.decode(token, settings.SECRET_KEY, leeway=leeway, algorithms=[settings.JWT_ALGORITHM])
     except jwt.exceptions.DecodeError:
         raise Unauthorized()
     except jwt.exceptions.ExpiredSignatureError:
@@ -68,7 +62,7 @@ def get_random_string(length=12,
     """
     random.seed(
         hashlib.sha256(
-            ('%s%s%s' % (random.getstate(), time.time(), getenv('SECRET_KEY'))).encode()
+            ('%s%s%s' % (random.getstate(), time.time(), settings.SECRET_KEY)).encode()
         ).digest()
     )
     return ''.join(random.choice(allowed_chars) for i in range(length))

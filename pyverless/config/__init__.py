@@ -1,12 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-    pyverless.config
-    ~~~~~~~~~~~~
-    Implements the configuration related objects.
-    :copyright: (c) 2015 by Armin Ronacher.
-    :license: BSD, see LICENSE for more details.
+pyverless.config
 """
-
 import os
 import types
 import errno
@@ -54,12 +49,7 @@ class Settings(object):
         """
         settings_file = os.environ.get(ENVIRONMENT_VARIABLE)
 
-        if not settings_file:
-            raise Exception(
-                "Settings are not configured. You must define the environment variable %s"
-                % (ENVIRONMENT_VARIABLE))
-
-        self._wrapped = self.from_pyfile(settings_file)
+        self._wrapped = self.load_settings(settings_file)
 
     def __getattr__(self, name):
         """Return the value of a setting and cache it in self.__dict__."""
@@ -67,7 +57,7 @@ class Settings(object):
         self.__dict__[name] = val
         return val
 
-    def from_pyfile(self, filename, silent=False):
+    def load_settings(self, filename=None, silent=False):
         """Updates the values in the config from a Python file.  This function
         behaves as if the file was imported as module with the
         :meth:`from_object` function.
@@ -79,24 +69,26 @@ class Settings(object):
         .. versionadded:: 0.7
            `silent` parameter.
         """
-        obj = types.ModuleType('config')
-        obj.__file__ = filename
-        try:
-            with open(filename, mode='rb') as config_file:
-                exec(compile(config_file.read(), filename, 'exec'), obj.__dict__)
-        except IOError as e:
-            if silent and e.errno in (errno.ENOENT, errno.EISDIR):
-                return False
-            e.strerror = 'Unable to load configuration file (%s)' % e.strerror
-            raise
 
         # load base settings
         self.load_base_settings()
 
         # load user settings
-        for key in dir(obj):
-            if key.isupper():
-                setattr(self, key, getattr(obj, key))
+        if filename:
+            obj = types.ModuleType('config')
+            obj.__file__ = filename
+            try:
+                with open(filename, mode='rb') as config_file:
+                    exec(compile(config_file.read(), filename, 'exec'), obj.__dict__)
+            except IOError as e:
+                if silent and e.errno in (errno.ENOENT, errno.EISDIR):
+                    return False
+                e.strerror = 'Unable to load configuration file (%s)' % e.strerror
+                raise
+
+            for key in dir(obj):
+                if key.isupper():
+                    setattr(self, key, getattr(obj, key))
 
         return True
 

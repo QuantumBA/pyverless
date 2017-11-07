@@ -6,12 +6,6 @@ from pyverless.decorators import warmup
 from pyverless.auth import get_user_model
 
 
-CORS_ORIGIN = settings.CORS_ORIGIN
-CORS_HEADERS = settings.CORS_HEADERS
-
-User = get_user_model()
-
-
 class RequestBodyMixin(object):
 
     required_body_keys = []
@@ -52,7 +46,7 @@ class AuthorizationMixin(object):
     def get_user(self):
         user_id = self.event['requestContext']['authorizer']['principalId']
 
-        return User.nodes.get(uid=user_id)
+        return get_user_model().nodes.get(uid=user_id)
 
 
 class ObjectMixin(object):
@@ -159,8 +153,8 @@ class BaseHandler(object):
             "statusCode": status_code,
             "body": json.dumps(body),
             "headers": {
-                "Access-Control-Allow-Origin": CORS_ORIGIN,
-                "Access-Control-Allow-Headers": CORS_HEADERS,
+                "Access-Control-Allow-Origin": settings.CORS_ORIGIN,
+                "Access-Control-Allow-Headers": settings.CORS_HEADERS,
                 "Access-Control-Allow-Methods": "*"
             }
         }
