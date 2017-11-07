@@ -19,7 +19,7 @@ def get_json_web_token(payload, expires=True, expiry=settings.JWT_EXPIRY):
         # This is how PyJwt computes now, check:
         # https://github.com/jpadilla/pyjwt/blob/master/jwt/api_jwt.py#L153
         now = timegm(datetime.utcnow().utctimetuple())
-        payload['exp'] = now + expiry
+        payload['exp'] = now + int(expiry)
 
     return jwt.encode(payload, settings.SECRET_KEY, settings.JWT_ALGORITHM).decode('utf-8')
 
