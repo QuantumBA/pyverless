@@ -1,18 +1,5 @@
-import importlib
 from pyverless.crypto import PBKDF2PasswordHasher
-from pyverless.config import settings
-
-
-def get_user_model():
-    try:
-        module, user_model = settings.USER_MODEL.rsplit('.', 1)
-    except AttributeError:
-        raise AttributeError('USER_MODEL configuration variable not set or invalid')
-    return getattr(importlib.import_module(module), user_model)
-
-
-def get_user_by_email(email):
-    return get_user_model().nodes.get_or_none(email=email)
+from pyverless.models import get_user_by_email
 
 
 def authenticate(email, password):

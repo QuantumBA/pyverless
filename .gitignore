@@ -17,5 +17,6 @@ __pycache__/
 .installed.cfg
 *.egg
 
-# Coverate
+# Coverage
 htmlcov/
+.coverage

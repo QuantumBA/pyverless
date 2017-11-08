@@ -1,7 +1,7 @@
 from unittest.mock import patch
 from pyverless.auth import authenticate
 
-from .test_config.models import User
+from test_config.models import User
 
 
 class TestAuth():
@@ -10,7 +10,7 @@ class TestAuth():
         self.context = None
 
         # A user
-        self.user = User.create_user(email='user@users.com', password='test-password')
+        self.user = User(email='user@users.com', password='test-password')
 
     @patch('pyverless.auth.get_user_by_email')
     def test_authenticate(self, mock_user):

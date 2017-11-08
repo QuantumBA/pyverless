@@ -3,7 +3,7 @@ import logging
 
 from pyverless.config import settings
 from pyverless.decorators import warmup
-from pyverless.auth import get_user_model
+from pyverless.models import get_user_model
 
 
 class RequestBodyMixin(object):
@@ -56,21 +56,21 @@ class ObjectMixin(object):
 
     def get_object(self):
         object_id = self.event['pathParameters']['id']
-        nodeset = self.get_nodeset()
+        queryset = self.get_queryset()
 
-        # When get_nodeset is overriden by the user, the nodeset it returns may
+        # When get_queryset is overriden by the user, the queryset it returns may
         # be a list. Is such case, the list has to be filtered to get the
         # desired object.
-        if isinstance(nodeset, list):
+        if isinstance(queryset, list):
 
             def filt(node):
                 return node.uid == object_id
 
-            filtered = list(filter(filt, nodeset))
+            filtered = list(filter(filt, queryset))
 
             obj = filtered.pop() if filtered else None
         else:
-            obj = self.get_nodeset().get_or_none(uid=object_id)
+            obj = self.get_queryset().get_or_none(uid=object_id)
 
         if not obj:
             self.error = ("Resource Not Found", 404)
@@ -78,8 +78,8 @@ class ObjectMixin(object):
 
         return obj
 
-    def get_nodeset(self):
-        return self.model.nodes
+    def get_queryset(self):
+        return getattr(self.model, settings.MODEL_MANAGER)
 
 
 class ListMixin(object):
@@ -87,8 +87,8 @@ class ListMixin(object):
     model = None
     serializer = None
 
-    def get_nodeset(self):
-        return self.model.nodes
+    def get_queryset(self):
+        return getattr(self.model, settings.MODEL_MANAGER)
 
 
 class BaseHandler(object):
@@ -231,13 +231,13 @@ class ListHandler(ListMixin, BaseHandler):
 
     def perform_action(self):
         _list = []
-        nodeset = self.get_nodeset()
+        queryset = self.get_queryset()
 
-        if isinstance(nodeset, list):
-            for obj in nodeset:
+        if isinstance(queryset, list):
+            for obj in queryset:
                 _list.append(self.serialize(obj))
         else:
-            for obj in nodeset.all():
+            for obj in queryset.all():
                 _list.append(self.serialize(obj))
 
         return _list

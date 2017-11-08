@@ -2,6 +2,7 @@ from os import getenv
 
 
 USER_MODEL = getenv('USER_MODEL', None)
+MODEL_MANAGER = getenv('MODEL_MANAGER', None)
 SECRET_KEY = getenv('SECRET_KEY', None)
 
 CORS_ORIGIN = getenv('CORS_ORIGIN', "*")

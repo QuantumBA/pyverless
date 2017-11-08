@@ -1,45 +1,33 @@
-# from neomodel import StructuredNode, StringProperty, UniqueIdProperty, EmailProperty
-
 from pyverless.crypto import PBKDF2PasswordHasher
-from unittest.mock import MagicMock
-
+from pyverless.serializers import Serializer
 
 hasher = PBKDF2PasswordHasher()
 
-mock_user = MagicMock()
-mock_user.email = 'user@users.com'
-mock_user.password = hasher.encode('test-password')
 
+class User:
 
-class User(object):
+    class objects:
+
+        def get_or_none(**kwargs):
+            return User(email='one@users.com', password='test-password')
+
+        def all():
+            return [
+                User(email='one@users.com', password='test-password'),
+                User(email='two@users.com', password='test-password')
+            ]
 
     def __init__(self, email, password):
         self.email = email
-        self.password = password
+        self.password = hasher.encode(password)
+        self.uid = "b89ee4a1d9ac4dd5aeb242264968aa4e"
 
-    @classmethod
-    def create_user(cls, **kwargs):
-        # Given a password, encode it before storing it
-        mock_user.email = kwargs['email']
-        mock_user.password = hasher.encode(kwargs['password'])
+    def save(self):
+        return self
 
-        return mock_user
-
-    nodes = MagicMock()
+    def delete(self):
+        return None
 
 
-# class User(StructuredNode):
-
-#     # Properties
-#     uid = UniqueIdProperty()
-#     email = EmailProperty(unique_index=True, required=True)
-#     password = StringProperty(required=True)
-#     name = StringProperty(required=False)
-#     phone = StringProperty(required=False)
-
-#     @classmethod
-#     def create_user(cls, **kwargs):
-#         # Given a password, encode it before storing it
-#         kwargs['password'] = hasher.encode(kwargs['password'])
-
-#         return super(User, cls).create(kwargs).pop()
+class UserSerializer(Serializer):
+    include = ['email']
