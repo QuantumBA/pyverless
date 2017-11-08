@@ -1,15 +1,12 @@
-from os import getenv
+USER_MODEL = None
+MODEL_MANAGER = 'objects'
+SECRET_KEY = None
 
+CORS_ORIGIN = "*"
+CORS_HEADERS = "*"
 
-USER_MODEL = getenv('USER_MODEL', None)
-MODEL_MANAGER = getenv('MODEL_MANAGER', None)
-SECRET_KEY = getenv('SECRET_KEY', None)
+JWT_EXPIRY = 300
+JWT_LEEWAY = 60
+JWT_ALGORITHM = 'HS256'
 
-CORS_ORIGIN = getenv('CORS_ORIGIN', "*")
-CORS_HEADERS = getenv('CORS_HEADERS', "*")
-
-JWT_EXPIRY = getenv('JWT_EXPIRY', 300)
-JWT_LEEWAY = getenv('JWT_LEEWAY', 60)
-JWT_ALGORITHM = getenv('JWT_ALGORITHM', 'HS256')
-
-WARMUP_LOG = getenv('WARMUP_LOG', True)
+WARMUP_LOG = True

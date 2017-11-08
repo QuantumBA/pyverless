@@ -74,7 +74,10 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=[''],
+    install_requires=[
+        'PyJWT==1.5.2',
+        'PyYAML==3.12'
+    ],
 
     # Requires python 3
     python_requires='>=3',
