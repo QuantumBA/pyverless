@@ -17,10 +17,10 @@ class User:
                 User(email='two@users.com', password='test-password')
             ]
 
-    def __init__(self, email, password):
+    def __init__(self, email, password, uid="b89ee4a1d9ac4dd5aeb242264968aa4e"):
         self.email = email
         self.password = hasher.encode(password)
-        self.uid = "b89ee4a1d9ac4dd5aeb242264968aa4e"
+        self.uid = uid
 
     def save(self):
         return self

@@ -16,11 +16,19 @@ class RequestBodyMixin(object):
         body = {}
         missing_keys = []
 
+        try:
+            request_body = json.loads(self.event['body'])
+        except KeyError:
+            request_body = {}
+        except json.decoder.JSONDecodeError:
+            self.error = ("Malformed body", 400)
+            raise
+
         # Collect all required keys and values. Collected missing keys are
         # reported as an error.
         for key in self.required_body_keys:
             try:
-                body[key] = json.loads(self.event['body'])[key]
+                body[key] = request_body[key]
             except KeyError:
                 missing_keys.append(key)
 
@@ -31,10 +39,7 @@ class RequestBodyMixin(object):
         # Collect all optional keys and values.
         for key in self.optional_body_keys:
             try:
-                body[key] = json.loads(self.event['body'])[key]
-            except json.decoder.JSONDecodeError:
-                self.error = ("Malformed body", 400)
-                raise
+                body[key] = request_body[key]
             except KeyError:
                 pass
 
@@ -44,9 +49,19 @@ class RequestBodyMixin(object):
 class AuthorizationMixin(object):
 
     def get_user(self):
-        user_id = self.event['requestContext']['authorizer']['principalId']
+        try:
+            user_id = self.event['requestContext']['authorizer']['principalId']
+        except KeyError as e:
+            self.error = ('Unauthorized', 403)
+            raise
 
-        return get_user_model().nodes.get(uid=user_id)
+        UserModel = get_user_model()
+        user = getattr(UserModel, settings.MODEL_MANAGER).get_or_none(uid=user_id)
+
+        if user:
+            return user
+        else:
+            self.error = ('Unauthorized', 403)
 
 
 class ObjectMixin(object):
@@ -56,21 +71,20 @@ class ObjectMixin(object):
 
     def get_object(self):
         object_id = self.event['pathParameters']['id']
-        queryset = self.get_queryset()
 
         # When get_queryset is overriden by the user, the queryset it returns may
         # be a list. Is such case, the list has to be filtered to get the
         # desired object.
-        if isinstance(queryset, list):
+        if isinstance(self.queryset, list):
 
-            def filt(node):
-                return node.uid == object_id
+            def filt(instance):
+                return instance.uid == object_id
 
-            filtered = list(filter(filt, queryset))
+            filtered = list(filter(filt, self.queryset))
 
             obj = filtered.pop() if filtered else None
         else:
-            obj = self.get_queryset().get_or_none(uid=object_id)
+            obj = self.queryset.get_or_none(uid=object_id)
 
         if not obj:
             self.error = ("Resource Not Found", 404)
@@ -95,6 +109,13 @@ class BaseHandler(object):
 
     success_code = 200
 
+    def perform_action(self):
+        """
+        This method is to be overriden. Here is where the particular handler
+        action is performed. Its return value is a dictionary with the response body.
+        """
+        return {}
+
     @classmethod
     def as_handler(cls):
         """
@@ -108,22 +129,35 @@ class BaseHandler(object):
             self.context = context
             self.error = None
 
-            # set user, object and/or body (that is, if the handler users the
-            # apropiate mixin and the method is avaliable
-            try:
-                self.user = self.get_user()
-            except Exception:
-                pass
+            # set user, queryset, object and/or body (that is, if the handler
+            # uses the apropiate mixin and the method is avaliable)
+            if hasattr(self, 'get_user'):
+                try:
+                    self.user = self.get_user()
+                except Exception as e:
+                    if not self.error:
+                        return self.render_500_error_response(e, context)
 
-            try:
-                self.object = self.get_object()
-            except Exception:
-                pass
+            if hasattr(self, 'get_queryset'):
+                try:
+                    self.queryset = self.get_queryset()
+                except Exception as e:
+                    if not self.error:
+                        return self.render_500_error_response(e, context)
 
-            try:
-                self.body = self.get_body()
-            except Exception:
-                pass
+            if hasattr(self, 'get_object'):
+                try:
+                    self.object = self.get_object()
+                except Exception as e:
+                    if not self.error:
+                        return self.render_500_error_response(e, context)
+
+            if hasattr(self, 'get_body'):
+                try:
+                    self.body = self.get_body()
+                except Exception as e:
+                    if not self.error:
+                        return self.render_500_error_response(e, context)
 
             # Perform handler action: If errors occur, render an error response
             # else, render and return the response.
@@ -231,13 +265,12 @@ class ListHandler(ListMixin, BaseHandler):
 
     def perform_action(self):
         _list = []
-        queryset = self.get_queryset()
 
-        if isinstance(queryset, list):
-            for obj in queryset:
+        if isinstance(self.queryset, list):
+            for obj in self.queryset:
                 _list.append(self.serialize(obj))
         else:
-            for obj in queryset.all():
+            for obj in self.queryset.all():
                 _list.append(self.serialize(obj))
 
         return _list
