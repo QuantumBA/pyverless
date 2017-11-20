@@ -51,7 +51,7 @@ class AuthorizationMixin(object):
     def get_user(self):
         try:
             user_id = self.event['requestContext']['authorizer']['principalId']
-        except KeyError as e:
+        except KeyError:
             self.error = ('Unauthorized', 403)
             raise
 

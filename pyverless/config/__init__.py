@@ -54,8 +54,9 @@ class Settings:
         with open(file, mode='rb') as yaml_file:
             settings = load(yaml_file)
 
-        for setting, value in settings.items():
-            setattr(self, setting, value)
+        if settings:  # setting file might be empty
+            for setting, value in settings.items():
+                setattr(self, setting, value)
 
     def load_from_module(self, module):
         """
