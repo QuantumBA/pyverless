@@ -68,9 +68,10 @@ class ObjectMixin(object):
 
     model = None
     serializer = None
+    id_in_path = 'id'
 
     def get_object(self):
-        object_id = self.event['pathParameters']['id']
+        object_id = self.event['pathParameters'][self.id_in_path]
 
         # When get_queryset is overriden by the user, the queryset it returns may
         # be a list. Is such case, the list has to be filtered to get the
