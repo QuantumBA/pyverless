@@ -17,3 +17,10 @@ class Forbidden(Exception):
     def __init__(self, message='Forbidden'):
         super(Forbidden, self).__init__(message)
         self.code = 403
+
+
+class NotFound(Exception):
+
+    def __init__(self, message='Resource Not Found'):
+        super(BadRequest, self).__init__(message)
+        self.code = 404

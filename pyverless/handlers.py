@@ -4,6 +4,7 @@ import logging
 from pyverless.config import settings
 from pyverless.decorators import warmup
 from pyverless.models import get_user_model
+from pyverless.exceptions import BadRequest, Unauthorized, NotFound
 
 
 class RequestBodyMixin(object):
@@ -21,8 +22,9 @@ class RequestBodyMixin(object):
         except KeyError:
             request_body = {}
         except json.decoder.JSONDecodeError:
-            self.error = ("Malformed body", 400)
-            raise
+            message = "Malformed body"
+            self.error = (message, 400)
+            raise BadRequest(message=message)
 
         # Collect all required keys and values. Collected missing keys are
         # reported as an error.
@@ -33,8 +35,9 @@ class RequestBodyMixin(object):
                 missing_keys.append(key)
 
         if missing_keys:
-            self.error = ("Missing key(s): %s" % ', '.join(missing_keys), 400)
-            raise Exception
+            message = "Missing key(s): %s" % ', '.join(missing_keys)
+            self.error = (message, 400)
+            raise BadRequest(message=message)
 
         # Collect all optional keys and values.
         for key in self.optional_body_keys:
@@ -53,7 +56,7 @@ class AuthorizationMixin(object):
             user_id = self.event['requestContext']['authorizer']['principalId']
         except KeyError:
             self.error = ('Unauthorized', 403)
-            raise
+            raise Unauthorized()
 
         UserModel = get_user_model()
         user = getattr(UserModel, settings.MODEL_MANAGER).get_or_none(uid=user_id)
@@ -62,6 +65,7 @@ class AuthorizationMixin(object):
             return user
         else:
             self.error = ('Unauthorized', 403)
+            raise Unauthorized()
 
 
 class ObjectMixin(object):
@@ -89,7 +93,7 @@ class ObjectMixin(object):
 
         if not obj:
             self.error = ("Resource Not Found", 404)
-            raise Exception
+            raise NotFound()
 
         return obj
 
