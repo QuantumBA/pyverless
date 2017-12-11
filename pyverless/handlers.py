@@ -1,5 +1,6 @@
 import json
 import logging
+import traceback
 
 from pyverless.config import settings
 from pyverless.decorators import warmup
@@ -141,28 +142,32 @@ class BaseHandler(object):
                     self.user = self.get_user()
                 except Exception as e:
                     if not self.error:
-                        return self.render_500_error_response(e, context)
+                        tb = traceback.format_exc()
+                        return self.render_500_error_response(e, tb)
 
             if hasattr(self, 'get_queryset'):
                 try:
                     self.queryset = self.get_queryset()
                 except Exception as e:
                     if not self.error:
-                        return self.render_500_error_response(e, context)
+                        tb = traceback.format_exc()
+                        return self.render_500_error_response(e, tb)
 
             if hasattr(self, 'get_object'):
                 try:
                     self.object = self.get_object()
                 except Exception as e:
                     if not self.error:
-                        return self.render_500_error_response(e, context)
+                        tb = traceback.format_exc()
+                        return self.render_500_error_response(e, tb)
 
             if hasattr(self, 'get_body'):
                 try:
                     self.body = self.get_body()
                 except Exception as e:
                     if not self.error:
-                        return self.render_500_error_response(e, context)
+                        tb = traceback.format_exc()
+                        return self.render_500_error_response(e, tb)
 
             # Perform handler action: If errors occur, render an error response
             # else, render and return the response.
@@ -171,7 +176,8 @@ class BaseHandler(object):
             except Exception as e:
                 # Render a 500 error response on unhandled/undefined error
                 if not self.error:
-                    return self.render_500_error_response(e, context)
+                    tb = traceback.format_exc()
+                    return self.render_500_error_response(e, tb)
 
             if self.error:
                 return self.render_error_response(self.error[0], self.error[1])
@@ -212,25 +218,26 @@ class BaseHandler(object):
 
         return response
 
-    def render_500_error_response(self, exception, context):
+    def render_500_error_response(self, e, tb):
         """
-        Given a exception and context, log unhandled exceptions and create an
-        error response with status code 500 and message 'Internal Server Error'
+        Given a exception and traceback, log unhandled exceptions and create an
+        error response with status code 500 and message, whose value depends on
+        DEBUG setting variable.
         """
         logger = logging.getLogger()
         logger.setLevel(logging.ERROR)
 
-        try:
-            logger.error('Exception in %(function)s: %(exception)s' % {
-                'function': context.function_name,
-                'exception': str(exception)
-            })
-            return self.render_error_response("Internal Server Error", 500)
-        except AttributeError:  # pragma: no cover
-            # This will happen while testing locally, as the context is not provided
-            # and function_name can't be accessed. On production, the context of handlers
-            # is provided by AWS lambda and failing handlers pass it on to here.
-            raise exception
+        logger.exception(e)
+
+        if settings.DEBUG:
+            message = {
+                "traceback": tb,
+                "event": self.event
+            }
+        else:
+            message = "Internal Server Error"
+
+        return self.render_error_response(message, 500)
 
 
 class CreateHandler(RequestBodyMixin, BaseHandler):
