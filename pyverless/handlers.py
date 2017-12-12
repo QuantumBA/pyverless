@@ -120,7 +120,7 @@ class BaseHandler(object):
         This method is to be overriden. Here is where the particular handler
         action is performed. Its return value is a dictionary with the response body.
         """
-        return {}
+        return self.response_body
 
     @classmethod
     def as_handler(cls):
@@ -134,55 +134,31 @@ class BaseHandler(object):
             self.event = event
             self.context = context
             self.error = None
+            self.response_body = {}
 
-            # set user, queryset, object and/or body (that is, if the handler
+            # set user, queryset, object, body and response_body (that is, if the handler
             # uses the apropiate mixin and the method is avaliable)
-            if hasattr(self, 'get_user'):
-                try:
-                    self.user = self.get_user()
-                except Exception as e:
-                    if not self.error:
-                        tb = traceback.format_exc()
-                        return self.render_500_error_response(e, tb)
+            pairs = [
+                ('user', 'get_user'),
+                ('queryset', 'get_queryset'),
+                ('object', 'get_object'),
+                ('body', 'get_body'),
+                ('response_body', 'perform_action')
+            ]
 
-            if hasattr(self, 'get_queryset'):
-                try:
-                    self.queryset = self.get_queryset()
-                except Exception as e:
-                    if not self.error:
-                        tb = traceback.format_exc()
-                        return self.render_500_error_response(e, tb)
-
-            if hasattr(self, 'get_object'):
-                try:
-                    self.object = self.get_object()
-                except Exception as e:
-                    if not self.error:
-                        tb = traceback.format_exc()
-                        return self.render_500_error_response(e, tb)
-
-            if hasattr(self, 'get_body'):
-                try:
-                    self.body = self.get_body()
-                except Exception as e:
-                    if not self.error:
-                        tb = traceback.format_exc()
-                        return self.render_500_error_response(e, tb)
-
-            # Perform handler action: If errors occur, render an error response
-            # else, render and return the response.
-            try:
-                response_body = self.perform_action()
-            except Exception as e:
-                # Render a 500 error response on unhandled/undefined error
-                if not self.error:
-                    tb = traceback.format_exc()
-                    return self.render_500_error_response(e, tb)
+            for attr, method in pairs:
+                if hasattr(self, method):
+                    try:
+                        setattr(self, attr, getattr(self, method)())
+                    except Exception as e:
+                        if not self.error:
+                            tb = traceback.format_exc()
+                            return self.render_500_error_response(e, tb)
 
             if self.error:
                 return self.render_error_response(self.error[0], self.error[1])
 
-            return self.render_response(response_body, self.success_code)
+            return self.render_response(self.response_body, self.success_code)
 
         return handler
 
