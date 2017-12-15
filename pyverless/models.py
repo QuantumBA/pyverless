@@ -11,4 +11,4 @@ def get_user_model():
 
 
 def get_user_by_email(email):
-    return get_user_model().nodes.get_or_none(email=email)
+    return getattr(get_user_model(), settings.MODEL_MANAGER).get_or_none(email=email)
