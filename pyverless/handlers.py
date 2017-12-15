@@ -19,9 +19,7 @@ class RequestBodyMixin(object):
         missing_keys = []
 
         try:
-            request_body = json.loads(self.event['body'])
-        except KeyError:
-            request_body = {}
+            request_body = json.loads(self.event['body']) if self.event['body'] else {}
         except json.decoder.JSONDecodeError:
             message = "Malformed body"
             self.error = (message, 400)

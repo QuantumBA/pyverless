@@ -28,6 +28,17 @@ class TestMixins():
 
     def test_request_body_mixin(self):
 
+        # Case: Missing body
+        event = {
+            "body": None
+        }
+
+        handler = self.TestRequestBodyHandler.as_handler()
+        response_body, status_code = _(handler(event, self.context))
+
+        assert status_code == 200
+        assert response_body == {}
+
         # Case: Malformed body
         event = {
             "body": '{"a malfomed"; "body"'
