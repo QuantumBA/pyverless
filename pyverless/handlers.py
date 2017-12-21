@@ -20,6 +20,9 @@ class RequestBodyMixin(object):
 
         try:
             request_body = json.loads(self.event['body']) if self.event['body'] else {}
+            # The next line is necessary because json.loads('null') = None.
+            # 'null' may be a possible value of 'body'
+            request_body = request_body if request_body else {}
         except json.decoder.JSONDecodeError:
             message = "Malformed body"
             self.error = (message, 400)
