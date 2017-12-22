@@ -102,6 +102,9 @@ class ObjectMixin(object):
     def get_queryset(self):
         return getattr(self.model, settings.MODEL_MANAGER)
 
+    def serialize(self, instance):
+        return self.serializer(instance=instance).data
+
 
 class ListMixin(object):
 
@@ -110,6 +113,9 @@ class ListMixin(object):
 
     def get_queryset(self):
         return getattr(self.model, settings.MODEL_MANAGER)
+
+    def serialize(self, instance):
+        return self.serializer(instance=instance).data
 
 
 class BaseHandler(object):
@@ -236,9 +242,6 @@ class RetrieveHandler(ObjectMixin, BaseHandler):
 
     success_code = 200
 
-    def serialize(self, instance):
-        return self.serializer(instance=instance).data
-
     def perform_action(self):
         data = self.serialize(self.object) if self.object else None
 
@@ -248,9 +251,6 @@ class RetrieveHandler(ObjectMixin, BaseHandler):
 class ListHandler(ListMixin, BaseHandler):
 
     success_code = 200
-
-    def serialize(self, instance):
-        return self.serializer(instance=instance).data
 
     def perform_action(self):
         _list = []
@@ -276,7 +276,7 @@ class UpdateHandler(RequestBodyMixin, ObjectMixin, BaseHandler):
 
         self.object.save()
 
-        return self.body
+        return self.serialize(self.object)
 
 
 class DeleteHandler(ObjectMixin, BaseHandler):
