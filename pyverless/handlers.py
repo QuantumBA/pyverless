@@ -161,9 +161,8 @@ class BaseHandler(object):
                         if not self.error:
                             tb = traceback.format_exc()
                             return self.render_500_error_response(e, tb)
-
-            if self.error:
-                return self.render_error_response(self.error[0], self.error[1])
+                if self.error:
+                    return self.render_error_response(self.error[0], self.error[1])
 
             return self.render_response(self.response_body, self.success_code)
 
