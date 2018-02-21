@@ -13,6 +13,9 @@ class RequestBodyMixin(object):
     required_body_keys = []
     optional_body_keys = []
 
+    def get_required_body_keys(self):
+        return self.required_body_keys
+
     def get_body(self):
 
         body = {}
@@ -30,7 +33,7 @@ class RequestBodyMixin(object):
 
         # Collect all required keys and values. Collected missing keys are
         # reported as an error.
-        for key in self.required_body_keys:
+        for key in self.get_required_body_keys():
             try:
                 body[key] = request_body[key]
             except KeyError:

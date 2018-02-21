@@ -91,6 +91,7 @@ class TestHandlers():
     class TestUpdateHandler(handlers.UpdateHandler):
         model = User
         required_body_keys = ['email']
+        serializer = UserSerializer
 
     class TestDeleteHandler(handlers.DeleteHandler):
         model = User
@@ -110,7 +111,7 @@ class TestHandlers():
         handler = self.TestCreateHandler.as_handler()
 
         # CASE: Body is empty. Missing keys
-        response_body, status_code = _(handler({}, {}))
+        response_body, status_code = _(handler({'body': None}, {}))
 
         assert status_code == 400
         assert response_body['code'] == 400
