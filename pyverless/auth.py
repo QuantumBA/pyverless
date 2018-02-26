@@ -11,7 +11,7 @@ def authenticate(email, password):
     # Get user by email
     user = get_user_by_email(email=email)
 
-    if user:
+    if user and user.password:
         # Verify the password. Return User if it's valid
         valid_password = hasher.verify(password, user.password)
 
