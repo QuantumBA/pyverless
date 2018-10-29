@@ -11,3 +11,6 @@ JWT_ALGORITHM = 'HS256'
 
 WARMUP_LOG = True
 DEBUG = False
+
+USE_SENTRY = False
+SENTRY_DNS = ""

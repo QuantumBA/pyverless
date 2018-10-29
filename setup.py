@@ -76,7 +76,8 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
         'PyJWT==1.5.2',
-        'PyYAML==3.12'
+        'PyYAML==3.12',
+        'sentry-sdk==0.5.1'
     ],
 
     # Requires python 3

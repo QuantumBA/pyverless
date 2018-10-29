@@ -2,6 +2,9 @@ import json
 import logging
 import traceback
 
+import sentry_sdk
+from sentry_sdk import capture_exception, configure_scope
+
 from pyverless.config import settings
 from pyverless.decorators import warmup
 from pyverless.models import get_user_model
@@ -137,6 +140,7 @@ class BaseHandler(object):
         """
         Returns a lambda handler function.
         """
+
         @warmup
         def handler(event, context):
             self = cls()
@@ -144,6 +148,8 @@ class BaseHandler(object):
             self.event = event
             self.context = context
             self.error = None
+            self.user = None
+            self.body = {}
             self.response_body = {}
 
             # set user, queryset, object, body and response_body (that is, if the handler
@@ -205,15 +211,35 @@ class BaseHandler(object):
 
     def render_500_error_response(self, e, tb):
         """
-        Given a exception and traceback, log unhandled exceptions and create an
-        error response with status code 500 and message, whose value depends on
-        DEBUG setting variable.
+        Given a exception and traceback, log unhandled exceptions using the python
+        logger and/or sentry. Also, create an http response with status code 500
+        and message.
         """
+
+        # Log errors using the python logger.
         logger = logging.getLogger()
         logger.setLevel(logging.ERROR)
 
         logger.exception(e)
 
+        # Log errors in sentry if USE_SENTRY setting variable is set to True.
+        if settings.USE_SENTRY:
+            sentry_sdk.init(dsn=settings.SENTRY_DNS)
+
+            with configure_scope() as scope:
+
+                if self.user:
+                    scope.user = {'id': self.user.uid, 'email': self.user.email}
+
+                scope.set_tag("stage", settings.STAGE)
+                scope.set_extra("class", self.__class__)
+                scope.set_extra("body", self.body)
+                scope.set_extra("event", self.event)
+
+            capture_exception(e)
+
+        # Send an 500 error response with traceback and event information in the
+        # response body if DEBUG setting variable is set to True.
         if settings.DEBUG:
             message = {
                 "traceback": tb,
