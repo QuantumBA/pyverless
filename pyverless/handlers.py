@@ -57,6 +57,23 @@ class RequestBodyMixin(object):
         return body
 
 
+class SQSAttributesMixin(object):
+
+    def get_attributes(self):
+
+        try:
+            message_attributes = json.loads(self.event['attributes']) if self.event['attributes'] else {}
+            # The next line is necessary because json.loads('null') = None.
+            # 'null' may be a possible value of 'attributes'
+            message_attributes = message_attributes if message_attributes else {}
+        except json.decoder.JSONDecodeError:
+            message = "Malformed attributes"
+            self.error = (message, 400)
+            raise BadRequest(message=message)
+
+        return message_attributes
+
+
 class AuthorizationMixin(object):
 
     def get_user(self):
@@ -159,7 +176,10 @@ class BaseHandler(object):
                 ('queryset', 'get_queryset'),
                 ('object', 'get_object'),
                 ('body', 'get_body'),
-                ('response_body', 'perform_action')
+                ('response_body', 'perform_action'),
+                ('attributes', 'get_attributes'),
+                ('region', 'get_region'),
+                ('event_source', 'get_event_source')
             ]
 
             for attr, method in pairs:

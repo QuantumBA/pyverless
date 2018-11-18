@@ -75,6 +75,11 @@ class TestHandlers():
         def perform_action(self):
             return {'key': 'value'}
 
+    class TesetBaseSQSHandler(handlers.BaseSQSHandler):
+
+        def perform_action(self):
+            return {'key': 'value'}
+
     class TestCreateHandler(handlers.CreateHandler):
         model = User
         required_body_keys = ['email', 'password']
@@ -102,6 +107,13 @@ class TestHandlers():
 
     def test_base_handler(self):
         handler = self.TestBaseHandler.as_handler()
+        response_body, status_code = _(handler(self.event, self.context))
+
+        assert status_code == 200
+        assert response_body['key'] == 'value'
+
+    def test_base_sqs_handler(self):
+        handler = self.TestBaseSQSHandler.as_handler()
         response_body, status_code = _(handler(self.event, self.context))
 
         assert status_code == 200
