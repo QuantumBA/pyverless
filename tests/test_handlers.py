@@ -3,6 +3,36 @@ from pyverless import handlers
 
 from test_config.models import User, UserSerializer
 
+event_sqs = {'Records': [
+    {
+        'messageId': 'b8b2883f-678a-4279-9667-2d12c48db9ee',
+        'receiptHandle': 'AQEB6Ndk2HFIfF8FFV+L7uOTrcZ5CzTo4qrDcbPts895HOxz7fQgtLKepHGctQFsPLCF2TOf6tAWDkirOCqvpena9BZWPLCYB0eAgTAQ0UjLCXocu+FiRzgH0OVrU9Xvw6CRobWgKVbEVAyedecH36PGwQFe0mhraUBS3yFTkr+IH/rSanLNoraYSSC1l4KXjEID+DgLw62c+1iMQINMG78zmaD23sJULhxT+UYtpu/8dKyjc3pc/DB681C0g/rYyKvGcswKhjS6lmWsOiDxBmLOjwl75oBhs48rFwZoWoWA37w0yGtCeJY9Gz3hiSWBlwDx2epxAnpsPY3heaLD1Ytu70rHIvCtAl6LcdCWZ0GVhriehVA7vP/FG0u9iFdpjh8VGIsJ493Y3KNaSRcpOw4PmA==',
+        'body': 'aaaa',
+        'attributes': {
+            'ApproximateReceiveCount': '1',
+            'SentTimestamp': '1542630756242',
+            'SenderId': 'AIDAIF2VDLAQKPHBJH63Y',
+            'ApproximateFirstReceiveTimestamp': '1542630756276',
+        },
+        'messageAttributes': {'attribute1': {
+            'stringValue': 'asadasd',
+            'stringListValues': [],
+            'binaryListValues': [],
+            'dataType': 'String',
+        }, 'attr2': {
+            'stringValue': '2',
+            'stringListValues': [],
+            'binaryListValues': [],
+            'dataType': 'Number',
+        }},
+        'md5OfMessageAttributes': '8a9fb00d734faedb8f5a47d34d45cdfd',
+        'md5OfBody': '74b87337454200d4d33f80c4663dc5e5',
+        'eventSource': 'aws:sqs',
+        'eventSourceARN': 'arn:aws:sqs:eu-west-1:378311708430:ModelEventsQueue',
+        'awsRegion': 'eu-west-1',
+    }]
+}
+
 
 def _(response):
     """
@@ -75,10 +105,8 @@ class TestHandlers():
         def perform_action(self):
             return {'key': 'value'}
 
-    class TesetBaseSQSHandler(handlers.BaseSQSHandler):
-
-        def perform_action(self):
-            return {'key': 'value'}
+    class TestReadSQSHandler(handlers.ReadSQSHandler):
+        pass
 
     class TestCreateHandler(handlers.CreateHandler):
         model = User
@@ -112,12 +140,13 @@ class TestHandlers():
         assert status_code == 200
         assert response_body['key'] == 'value'
 
-    def test_base_sqs_handler(self):
-        handler = self.TestBaseSQSHandler.as_handler()
-        response_body, status_code = _(handler(self.event, self.context))
+    def test_read_sqs_handler(self):
+        handler = self.TestReadSQSHandler.as_handler()
+        response_body, status_code = _(handler(event_sqs, self.context))
 
         assert status_code == 200
-        assert response_body['key'] == 'value'
+        assert len(response_body) == 1
+        assert response_body[0]['text_message'] == 'aaaa'
 
     def test_create_handler(self):
         handler = self.TestCreateHandler.as_handler()

@@ -57,21 +57,40 @@ class RequestBodyMixin(object):
         return body
 
 
-class SQSAttributesMixin(object):
+class SQSMessagesMixin(object):
 
-    def get_attributes(self):
+    def get_messages(self):
+        messages = []
 
         try:
-            message_attributes = json.loads(self.event['attributes']) if self.event['attributes'] else {}
-            # The next line is necessary because json.loads('null') = None.
-            # 'null' may be a possible value of 'attributes'
-            message_attributes = message_attributes if message_attributes else {}
+            temp_messages = self.event['Records'] if self.event['Records'] else []
         except json.decoder.JSONDecodeError:
-            message = "Malformed attributes"
+            message = "Malformed message"
             self.error = (message, 400)
             raise BadRequest(message=message)
 
-        return message_attributes
+        for message in temp_messages:
+            temp_message = {}
+
+            temp_message['attributes'] = self.get_message_part(message, 'messageAttributes', message['messageId'])
+            temp_message['text_message'] = self.get_message_part(message, 'body', message['messageId'])
+            temp_message['queue_source'] = message['eventSourceARN']
+            temp_message['region'] = message['awsRegion']
+
+            messages.append(temp_message)
+
+        return messages
+
+    def get_message_part(self, message, part, message_id):
+
+        try:
+            message_part = message[part] if message[part] else {}
+        except json.decoder.JSONDecodeError:
+            response_text = "Malformed {} in message {}".format(part, message_id)
+            self.error = (response_text, 400)
+            raise BadRequest(message=response_text)
+
+        return message_part
 
 
 class AuthorizationMixin(object):
@@ -168,6 +187,7 @@ class BaseHandler(object):
             self.user = None
             self.body = {}
             self.response_body = {}
+            self.messages = {}
 
             # set user, queryset, object, body and response_body (that is, if the handler
             # uses the apropiate mixin and the method is avaliable)
@@ -176,10 +196,8 @@ class BaseHandler(object):
                 ('queryset', 'get_queryset'),
                 ('object', 'get_object'),
                 ('body', 'get_body'),
+                ('messages', 'get_messages'),
                 ('response_body', 'perform_action'),
-                ('attributes', 'get_attributes'),
-                ('region', 'get_region'),
-                ('event_source', 'get_event_source')
             ]
 
             for attr, method in pairs:
@@ -269,6 +287,14 @@ class BaseHandler(object):
             message = "Internal Server Error"
 
         return self.render_error_response(message, 500)
+
+
+class ReadSQSHandler(SQSMessagesMixin, BaseHandler):
+
+    success_code = 200
+
+    def perform_action(self):
+        return self.messages
 
 
 class CreateHandler(RequestBodyMixin, BaseHandler):
