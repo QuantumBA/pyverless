@@ -93,6 +93,37 @@ class SQSMessagesMixin(object):
         return message_part
 
 
+class S3FileMixin(object):
+
+    def get_file(self):
+        try:
+            temp_file_event = self.event['Records'] if self.event['Records'] else []
+        except json.decoder.JSONDecodeError:
+            message = "Malformed message"
+            self.error = (message, 400)
+            raise BadRequest(message=message)
+
+        file = {
+            'bucket': temp_file_event[0]['s3']['bucket']['name'],
+            'owner': temp_file_event[0]['s3']['bucket']['ownerIdentity']['principalId'],
+            'file_name': temp_file_event[0]['s3']['object']['key'],
+            'size': temp_file_event[0]['s3']['object']['size'],
+        }
+
+        return file
+
+    def get_message_part(self, message, part, message_id):
+
+        try:
+            message_part = message[part] if message[part] else {}
+        except json.decoder.JSONDecodeError:
+            response_text = "Malformed {} in message {}".format(part, message_id)
+            self.error = (response_text, 400)
+            raise BadRequest(message=response_text)
+
+        return message_part
+
+
 class AuthorizationMixin(object):
 
     def get_user(self):
@@ -197,6 +228,7 @@ class BaseHandler(object):
                 ('object', 'get_object'),
                 ('body', 'get_body'),
                 ('messages', 'get_messages'),
+                ('file', 'get_file'),
                 ('response_body', 'perform_action'),
             ]
 
