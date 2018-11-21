@@ -23,17 +23,17 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.1',
+    version='0.0.1',
 
     description='A mini-framework providing tools to help you make complex APIs with serverless',
     long_description=long_description,
 
     # The project's main homepage.
-    url='https://github.com/pypa/sampleproject',
+    url='https://github.com/QuantumBA/pyverless',
 
     # Author details
-    author='Carlos de las Heras',
-    author_email='cahersan@gmail.com',
+    author='Carlos de las Heras - Foqum',
+    author_email='info@foqum.io',
 
     # Choose your license
     license='BSD',
@@ -44,7 +44,7 @@ setup(
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
 
 
         # Indicate who your project is intended for

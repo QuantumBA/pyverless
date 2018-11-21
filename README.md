@@ -1,3 +1,6 @@
+[![PyPI pyversions](https://img.shields.io/pypi/pyversions/ansicolortags.svg)](https://pypi.python.org/pypi/pyverless/)
+[![PyPI license](https://img.shields.io/pypi/l/ansicolortags.svg)](https://pypi.python.org/pypi/pyverless/)
+[![PyPI status](https://img.shields.io/pypi/status/ansicolortags.svg)](https://pypi.python.org/pypi/pyverless/)
 # Pyverless
 
 Developing complex APIs within AWS lambdas can be somewhat of a messy task. Lambdas are independent functions that have to work together in order to create a full-blown app, like atoms to a complex organism.
