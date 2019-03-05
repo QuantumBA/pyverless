@@ -20,3 +20,6 @@ __pycache__/
 # Coverage
 htmlcov/
 .coverage
+
+# PyCharm
+.idea/

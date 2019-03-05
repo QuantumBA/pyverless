@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/QuantumBA/pyverless.svg?branch=master)](https://travis-ci.org/QuantumBA/pyverless)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/pyverless.svg)](https://pypi.python.org/pypi/pyverless/)
 [![PyPI license](https://img.shields.io/pypi/l/pyverless.svg)](https://pypi.python.org/pypi/pyverless/)
 [![PyPI status](https://img.shields.io/pypi/status/pyverless.svg)](https://pypi.python.org/pypi/pyverless/)
