@@ -46,23 +46,82 @@ _myHandler = MyHandler.as_handler()
 There is a set of generic CBHs to handle basic CRUD operations within an API:
 
 ### CreateHandler
+Handler that reads the request body and creates the object with each (key, value) pair as a parameter for the constructor.
 
-**TODO**
+The `model` attribute must be set on the handler and the `create_object` method can be overwritten.
+
+Usage:
+
+```python
+class UserCreateHandler(CreateHandler):
+
+    model = MyUserClass # MyUserClass(k1=v1, k2=v2, ...) for each k,v on body
+    required_body_keys = ['email', 'password']
+```
 
 ### RetrieveHandler
+Handler that returns a serialized Object.
 
-**TODO**
+The `model` attribute must be set and `id` must be present on the pathParameters.
+
+The user must overwrite either the `serializer` attribute or the `serialize` method.
+
+Usage:
+
+```python
+class UserRetrieveHandler(RetrieveHandler):
+
+    model = MyUserClass
+    serializer = serialize_user
+```
 
 ### UpdateHandler
+Handler that sets self.object and for each (key, value) pair of the body
+sets self.object.key = value.
 
-**TODO**
+The `model` attribute must be set and `id` must be present on the pathParameters.
+
+Returns the serialized node and sets the HTTP status code to 200
+
+Usage:
+
+```python
+class UserUpdateHandler(UpdateHandler):
+    model = MyUserClass
+    required_body_keys = ['title', 'body']
+    serializer = serialize_user
+```
+
 
 ### DeleteHandler
+Handler that sets self.object, calls its delete() method and sets the HTTP status code to 204.
 
-**TODO**
+The `model` attribute must be set and `id` must be present on the pathParameters.
 
+The user can also overwrite the `get_queryset` method to limit the search.
+
+Usage:
+
+```python
+class UserDeleteHandler(DeleteHandler):
+    model = MyUserClass
+```
 ### ListHandler
+Handler that returns a list of serialized nodes and sets the HTTP status code to 200.
 
+The `model` attribute must be set and the user must overwrite either the `serializer` attribute
+or the `serialize` method.
+
+```python
+class UserListHandler(ListHandler):
+    model = MyUserClass
+    serializer = user_serializer
+    
+    def get_queryset(self):
+        return only_some_users
+```
+
+## Mixins
 There are also a set of **mixins** available:
 
 ### RequestBodyMixin

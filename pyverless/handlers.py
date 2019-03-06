@@ -12,6 +12,10 @@ from pyverless.exceptions import BadRequest, Unauthorized, NotFound
 
 
 class RequestBodyMixin(object):
+    """
+    Implement the get_body method that will be called to set self.body as the body
+    of the request.
+    """
 
     required_body_keys = []
     optional_body_keys = []
@@ -58,6 +62,16 @@ class RequestBodyMixin(object):
 
 
 class SQSMessagesMixin(object):
+    """
+    Implement the get_messages method that will be called to set self.messages
+
+    Each message is a dict with the following keys:
+
+    - attributes
+    - text_message
+    - queue_source
+    - region
+    """
 
     def get_messages(self):
         messages = []
@@ -94,6 +108,16 @@ class SQSMessagesMixin(object):
 
 
 class S3FileMixin(object):
+    """
+    Implement the get_file method that will be called to set self.file
+
+    The file is a dict with the following keys:
+
+    - bucket
+    - owner
+    - file_name
+    - size
+    """
 
     def get_file(self):
         try:
@@ -125,6 +149,11 @@ class S3FileMixin(object):
 
 
 class AuthorizationMixin(object):
+    """
+    Implement the get_user method that will be called to set self.user
+
+    USER_MODEL must be set on the pyverless settings
+    """
 
     def get_user(self):
         try:
@@ -144,6 +173,14 @@ class AuthorizationMixin(object):
 
 
 class ObjectMixin(object):
+    """
+    Implement the get_object method that will be called to set self.object,
+    the object 'id' must be present on the pathParameters.
+
+    The user can also overwrite the get_queryset method to limit the visibility.
+
+    The 'model' attribute must be set on the handler.
+    """
 
     model = None
     serializer = None
@@ -180,6 +217,12 @@ class ObjectMixin(object):
 
 
 class ListMixin(object):
+    """
+    Implement the get_queryset method that will be called to set self.queryset
+
+    The 'model' attribute must be set on the handler and the user must overwrite
+    either the 'serializer' attribute or the 'serialize' method.
+    """
 
     model = None
     serializer = None
@@ -322,6 +365,16 @@ class BaseHandler(object):
 
 
 class ReadSQSHandler(SQSMessagesMixin, BaseHandler):
+    """
+    Handler that returns a list of SQS messages and sets the HTTP status code to 200.
+
+    Each message is a dict with the following keys:
+
+    - attributes
+    - text_message
+    - queue_source
+    - region
+    """
 
     success_code = 200
 
@@ -330,6 +383,12 @@ class ReadSQSHandler(SQSMessagesMixin, BaseHandler):
 
 
 class CreateHandler(RequestBodyMixin, BaseHandler):
+    """
+    Handler that reads the request body and creates the object with each (key, value) pair
+    as the params for the constructor.
+
+    The 'model' attribute must be set on the handler and the user can overwrite the 'create_object' method.
+    """
 
     success_code = 201
 
@@ -345,6 +404,13 @@ class CreateHandler(RequestBodyMixin, BaseHandler):
 
 
 class RetrieveHandler(ObjectMixin, BaseHandler):
+    """
+    Handler that returns a serialized Object.
+
+    The 'model' attribute must be set and 'id' must be present on the pathParameters.
+
+    The user also has to define the 'serialize' method on the handler.
+    """
 
     success_code = 200
 
@@ -355,6 +421,12 @@ class RetrieveHandler(ObjectMixin, BaseHandler):
 
 
 class ListHandler(ListMixin, BaseHandler):
+    """
+    Handler that returns a list of serialized nodes and sets the HTTP status code to 200.
+
+    The 'model' attribute must be set and the user must overwrite
+    either the 'serializer' attribute or the 'serialize' method.
+    """
 
     success_code = 200
 
@@ -372,6 +444,14 @@ class ListHandler(ListMixin, BaseHandler):
 
 
 class UpdateHandler(RequestBodyMixin, ObjectMixin, BaseHandler):
+    """
+    Handler that sets self.object and for each (key, value) pair of the body
+    sets self.object.key = value.
+
+    The 'model' attribute must be set and 'id' must be present on the pathParameters.
+
+    Returns the serialized node and sets the HTTP status code to 200
+    """
 
     success_code = 200
 
@@ -386,6 +466,13 @@ class UpdateHandler(RequestBodyMixin, ObjectMixin, BaseHandler):
 
 
 class DeleteHandler(ObjectMixin, BaseHandler):
+    """
+    Handler that sets self.object, calls its delete() method and sets the HTTP status code to 204.
+
+    The 'model' attribute must be set and 'id' must be present on the pathParameters.
+
+    The user can also overwrite the 'get_queryset' method to limit the search.
+    """
 
     success_code = 204
 
