@@ -129,7 +129,7 @@ There are also a set of **mixins** available:
 This mixin provides the `get_body()` method which is in charge of gathering the request body dictionary. Define `required_body_keys` and `optinal_body_keys` as follows. Within the handler, you can access the body via `self.body` or by calling `get_body()`
 
 ```python
-class MyHandler(RequestBodyHandler, BaseHandler):
+class MyHandler(RequestBodyMixin, BaseHandler):
     required_body_keys = ['name', 'email']
     optinal_body_keys = ['phone']
 
@@ -138,16 +138,38 @@ _myHandler = MyHandler.as_handler()
 
 ### AuthorizationMixin
 
-This mixin provides the `get_user()` method in charge of getting the user out of an authenticated API call. Within the handler, you can access the body via `self.body` or by calling `get_user()`
+This mixin provides the `get_user()` method in charge of getting the user out of an authenticated API call.
+Within the handler, you can access the body via `self.body` or by calling `get_user()`. The user will be a object
+of the class specified on pyverless settings as `USER_MODEL`.
 
-### ObjectMixin
+### RequestBodyMixin
 
-This mixin provides the `get_object()` method in charge of gathering a particular object.
+This mixin provides the `get_object()` method in charge of gathering a particular object,
+you can access the object via `self.object`.
+The `id` of the object will be taken from the pathParameters and
+the user must set the `model` attribute on the handler.
 
 ### ListMixin
 
-**TODO**
+This mixin provides the `get_queryset()` method in charge of getting a list of objects,
+you can access the list via `self.queryset`. The user must set the `model` attribute
+and either the `serializer` attribute or `serialize()` method on the handler.
 
+### S3FileMixin
+
+This mixin provides the `get_file()` and `get_message_part()` methods in charge of
+reading an event from aws S3, you can access the file via `self.file`.
+
+The file will be a `dict()` with the following keys: bucket, owner, file_name, size.
+
+***Warning: Only tested with objectCreated!!!!***
+
+### SQSMessagesMixin
+
+This mixin provides the `get_messages()` method in charge of reading an SQS event from aws.
+You can access the list of messages via `self.messages`.
+
+Each message will be a `dict()` with the following keys: attributes, text_message, queue_source, region.
 
 ## Serializers
 
