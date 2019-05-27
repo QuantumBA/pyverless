@@ -139,7 +139,7 @@ _myHandler = MyHandler.as_handler()
 ### AuthorizationMixin
 
 This mixin provides the `get_user()` method in charge of getting the user out of an authenticated API call.
-Within the handler, you can access the body via `self.body` or by calling `get_user()`. The user will be a object
+Within the handler, you can access the body via `self.user` or by calling `get_user()`. The user will be a object
 of the class specified on pyverless settings as `USER_MODEL`.
 
 ### RequestBodyMixin
