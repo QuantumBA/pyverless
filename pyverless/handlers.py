@@ -113,6 +113,7 @@ class S3FileMixin(object):
 
     The file is a dict with the following keys:
 
+    - event_name
     - bucket
     - owner
     - file_name
@@ -128,6 +129,7 @@ class S3FileMixin(object):
             raise BadRequest(message=message)
 
         file = {
+            'event_name': temp_file_event[0]['eventName'],
             'bucket': temp_file_event[0]['s3']['bucket']['name'],
             'owner': temp_file_event[0]['s3']['bucket']['ownerIdentity']['principalId'],
             'file_name': temp_file_event[0]['s3']['object']['key'],
