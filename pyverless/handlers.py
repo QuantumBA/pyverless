@@ -133,8 +133,10 @@ class S3FileMixin(object):
             'bucket': temp_file_event[0]['s3']['bucket']['name'],
             'owner': temp_file_event[0]['s3']['bucket']['ownerIdentity']['principalId'],
             'file_name': temp_file_event[0]['s3']['object']['key'],
-            'size': temp_file_event[0]['s3']['object']['size'],
         }
+        # on ObjectRemoved event, the size is not present
+        if temp_file_event[0]['s3']['object'].get('size'):
+            file['size'] = temp_file_event[0]['s3']['object']['size']
 
         return file
 
