@@ -18,9 +18,6 @@ class RequestBodyMixin(object):
     of the request.
     """
 
-    event: dict
-    error: Union[list, tuple]
-
     required_body_keys = []
     optional_body_keys = []
 
@@ -77,9 +74,6 @@ class SQSMessagesMixin(object):
     - region
     """
 
-    event: dict
-    error: Union[list, tuple]
-
     def get_messages(self):
         messages = []
 
@@ -127,8 +121,6 @@ class S3FileMixin(object):
     - size
     """
 
-    event: dict
-
     def get_file(self):
         try:
             temp_file_event = self.event['Records'] if self.event['Records'] else []
@@ -168,10 +160,6 @@ class AuthorizationMixin(object):
     USER_MODEL must be set on the pyverless settings
     """
 
-    event: dict
-    error: Union[list, tuple]
-    user: Any
-
     def get_user(self):
         try:
             user_id = self.event['requestContext']['authorizer']['principalId']
@@ -198,9 +186,6 @@ class ObjectMixin(object):
 
     The 'model' attribute must be set on the handler.
     """
-
-    event: dict
-    error: Union[list, tuple]
 
     model = None
     serializer = None
@@ -257,8 +242,14 @@ class ListMixin(object):
 class BaseHandler(object):
 
     # type hints
-    event: dict
+    user: Any
+    queryset: Any
+    object: Any
     body: dict
+    messages: list
+    file: dict
+
+    event: dict
     error: Union[list, tuple]
 
     success_code = 200
