@@ -1,6 +1,7 @@
 import json
 import logging
 import traceback
+from typing import Union
 
 import sentry_sdk
 from sentry_sdk import capture_exception, configure_scope
@@ -16,6 +17,9 @@ class RequestBodyMixin(object):
     Implement the get_body method that will be called to set self.body as the body
     of the request.
     """
+
+    event: dict
+    error: Union[list, tuple]
 
     required_body_keys = []
     optional_body_keys = []
@@ -73,6 +77,9 @@ class SQSMessagesMixin(object):
     - region
     """
 
+    event: dict
+    error: Union[list, tuple]
+
     def get_messages(self):
         messages = []
 
@@ -120,6 +127,8 @@ class S3FileMixin(object):
     - size
     """
 
+    event: dict
+
     def get_file(self):
         try:
             temp_file_event = self.event['Records'] if self.event['Records'] else []
@@ -159,6 +168,9 @@ class AuthorizationMixin(object):
     USER_MODEL must be set on the pyverless settings
     """
 
+    event: dict
+    error: Union[list, tuple]
+
     def get_user(self):
         try:
             user_id = self.event['requestContext']['authorizer']['principalId']
@@ -185,6 +197,9 @@ class ObjectMixin(object):
 
     The 'model' attribute must be set on the handler.
     """
+
+    event: dict
+    error: Union[list, tuple]
 
     model = None
     serializer = None
@@ -239,6 +254,11 @@ class ListMixin(object):
 
 
 class BaseHandler(object):
+
+    # type hints
+    event: dict
+    body: dict
+    error: Union[list, tuple]
 
     success_code = 200
 
