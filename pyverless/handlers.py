@@ -1,7 +1,7 @@
 import json
 import logging
 import traceback
-from typing import Union
+from typing import Union, Any
 
 import sentry_sdk
 from sentry_sdk import capture_exception, configure_scope
@@ -170,6 +170,7 @@ class AuthorizationMixin(object):
 
     event: dict
     error: Union[list, tuple]
+    user: Any
 
     def get_user(self):
         try:
