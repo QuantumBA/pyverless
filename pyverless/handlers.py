@@ -251,6 +251,7 @@ class BaseHandler(object):
 
     event: dict
     error: Union[list, tuple]
+    force_error: bool
 
     success_code = 200
 
@@ -278,6 +279,7 @@ class BaseHandler(object):
             self.body = {}
             self.response_body = {}
             self.messages = {}
+            self.force_error = False
 
             # set user, queryset, object, body and response_body (that is, if the handler
             # uses the apropiate mixin and the method is avaliable)
@@ -334,7 +336,10 @@ class BaseHandler(object):
             "code": status_code,
             "message": message
         }
-        response = self.render_response(body, status_code)
+        if not self.force_error:
+            response = self.render_response(body, status_code)
+        else:
+            raise Exception(json.dumps(body))
 
         return response
 
