@@ -22,5 +22,12 @@ class Forbidden(Exception):
 class NotFound(Exception):
 
     def __init__(self, message='Resource Not Found'):
-        super(BadRequest, self).__init__(message)
+        super(NotFound, self).__init__(message)
         self.code = 404
+
+
+class ServerError(Exception):
+
+    def __init__(self, message='Internal Server Error'):
+        super(ServerError, self).__init__(message)
+        self.code = 500
