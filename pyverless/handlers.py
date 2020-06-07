@@ -302,7 +302,7 @@ class BaseHandler(object):
                             tb = traceback.format_exc()
                             return self.render_500_error_response(e, tb)
                 if self.error:
-                    return self.render_error_response(self.error[0], self.error[1])
+                    return self.render_error_response(self.error[0], self.error[1], self.error[2] if len(self.error) == 3 else None)
 
             return self.render_response(self.response_body, self.success_code)
 
@@ -327,7 +327,7 @@ class BaseHandler(object):
         }
         return response
 
-    def render_error_response(self, message, status_code):
+    def render_error_response(self, message, status_code, field=None):
         """
         Given a message and error status_code, returns a dictionary in the format of a valid
         AWS handler response with our error body definition. This allows us to be consistent.
@@ -336,6 +336,8 @@ class BaseHandler(object):
             "code": status_code,
             "message": message
         }
+        if field:
+            body["field"] = field
         if not self.force_error:
             response = self.render_response(body, status_code)
         else:
