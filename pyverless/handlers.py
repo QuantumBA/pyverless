@@ -34,6 +34,8 @@ class RequestBodyMixin(object):
             # The next line is necessary because json.loads('null') = None.
             # 'null' may be a possible value of 'body'
             request_body = request_body if request_body else {}
+            if not isinstance(request_body, dict) and not self.get_required_body_keys():
+                return request_body
         except json.decoder.JSONDecodeError:
             message = "Malformed body"
             self.error = (message, 400)
@@ -245,7 +247,7 @@ class BaseHandler(object):
     user: Any
     queryset: Any
     object: Any
-    body: dict
+    body: Any
     messages: list
     file: dict
 
