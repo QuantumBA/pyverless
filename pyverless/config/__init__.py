@@ -4,7 +4,7 @@ pyverless.config
 """
 import importlib
 import os
-from yaml import load
+from yaml import load, FullLoader
 
 ENVIRONMENT_VARIABLE = "PYVERLESS_SETTINGS"
 BASE_SETTINGS_MODULE = 'pyverless.config.base_settings'
@@ -52,7 +52,7 @@ class Settings:
         load_from_yaml_file
         """
         with open(file, mode='rb') as yaml_file:
-            settings = load(yaml_file)
+            settings = load(yaml_file, Loader=FullLoader)
 
         if settings:  # setting file might be empty
             for setting, value in settings.items():
