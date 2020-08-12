@@ -163,6 +163,8 @@ class AuthorizationMixin(object):
     """
 
     def get_user(self):
+        # TODO: if there is no token or it is invalid it should return 401 instead of 403
+        # see: https://stackoverflow.com/questions/50143518/401-unauthorized-vs-403-forbidden-which-is-the-right-status-code-for-when-the-u?rq=1
         try:
             user_id = self.event['requestContext']['authorizer']['principalId']
         except KeyError:
