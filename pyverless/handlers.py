@@ -459,14 +459,15 @@ class ListHandler(ListMixin, BaseHandler):
 
     def perform_action(self):
         _list = []
+        offset = self.event.get("queryStringParameters", {}).get("page", 0)
+        limit = self.event.get("queryStringParameters", {}).get("per_page")
+        end = None
+        if limit is not None:
+            offset = offset * limit
+            end = offset + limit
 
-        if isinstance(self.queryset, list):
-            for obj in self.queryset:
-                _list.append(self.serialize(obj))
-        else:
-            for obj in self.queryset.all():
-                _list.append(self.serialize(obj))
-
+        for obj in self.queryset[offset: end]:
+            _list.append(self.serialize(obj))
         return _list
 
 
