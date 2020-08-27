@@ -12,7 +12,7 @@ from pyverless.models import get_user_model
 from pyverless.exceptions import BadRequest, Unauthorized, NotFound
 
 
-class RequestBodyMixin(object):
+class RequestBodyMixin:
     """
     Implement the get_body method that will be called to set self.body as the body
     of the request.
@@ -64,7 +64,43 @@ class RequestBodyMixin(object):
         return body
 
 
-class SQSMessagesMixin(object):
+class QueryParamsMixin:
+    """
+    Implement the get_queryparams method that will be called to populate self.queryparams
+    """
+
+    required_query_keys = []
+    optional_query_keys = []
+
+    def get_queryparams(self):
+
+        queryparams = {}
+        missing_keys = []
+
+        request_queryparams = self.event.get("queryStringParameters") or {}
+
+        for key in self.required_query_keys:
+            try:
+                queryparams[key] = request_queryparams[key]
+            except KeyError:
+                missing_keys.append(key)
+
+        if missing_keys:
+            message = "Missing key(s): %s" % ', '.join(missing_keys)
+            self.error = (message, 400)
+            raise BadRequest(message=message)
+
+        # Collect all optional keys and values.
+        for key in self.optional_query_keys:
+            try:
+                queryparams[key] = request_queryparams[key]
+            except KeyError:
+                pass
+
+        return queryparams
+
+
+class SQSMessagesMixin:
     """
     Implement the get_messages method that will be called to set self.messages
 
@@ -110,7 +146,7 @@ class SQSMessagesMixin(object):
         return message_part
 
 
-class S3FileMixin(object):
+class S3FileMixin:
     """
     Implement the get_file method that will be called to set self.file
 
@@ -155,7 +191,7 @@ class S3FileMixin(object):
         return message_part
 
 
-class AuthorizationMixin(object):
+class AuthorizationMixin:
     """
     Implement the get_user method that will be called to set self.user
 
@@ -181,7 +217,7 @@ class AuthorizationMixin(object):
             raise Unauthorized()
 
 
-class ObjectMixin(object):
+class ObjectMixin:
     """
     Implement the get_object method that will be called to set self.object,
     the object 'id' must be present on the pathParameters.
@@ -225,7 +261,7 @@ class ObjectMixin(object):
         return self.serializer(instance=instance).data
 
 
-class ListMixin(object):
+class ListMixin:
     """
     Implement the get_queryset method that will be called to set self.queryset
 
@@ -243,13 +279,14 @@ class ListMixin(object):
         return self.serializer(instance=instance).data
 
 
-class BaseHandler(object):
+class BaseHandler:
 
     # type hints
     user: Any
     queryset: Any
     object: Any
     body: Any
+    queryparams: dict
     messages: list
     file: dict
 
@@ -292,6 +329,7 @@ class BaseHandler(object):
                 ('queryset', 'get_queryset'),
                 ('object', 'get_object'),
                 ('body', 'get_body'),
+                ('queryparams', 'get_queryparams'),
                 ('messages', 'get_messages'),
                 ('file', 'get_file'),
                 ('response_body', 'perform_action'),
@@ -447,7 +485,7 @@ class RetrieveHandler(ObjectMixin, BaseHandler):
         return data
 
 
-class ListHandler(ListMixin, BaseHandler):
+class ListHandler(ListMixin, QueryParamsMixin, BaseHandler):
     """
     Handler that returns a list of serialized nodes and sets the HTTP status code to 200.
 
@@ -456,15 +494,16 @@ class ListHandler(ListMixin, BaseHandler):
     """
 
     success_code = 200
+    optional_query_keys = ["page", "per_page"]
 
     def perform_action(self):
         _list = []
-        offset = self.event.get("queryStringParameters", {}).get("page", 0)
-        limit = self.event.get("queryStringParameters", {}).get("per_page")
+        offset = int(self.queryparams.get("page", 0))
+        limit = self.queryparams.get("per_page")
         end = None
         if limit is not None:
-            offset = offset * limit
-            end = offset + limit
+            offset = offset * int(limit)
+            end = offset + int(limit)
 
         for obj in self.queryset[offset: end]:
             _list.append(self.serialize(obj))
