@@ -494,12 +494,13 @@ class ListHandler(ListMixin, QueryParamsMixin, BaseHandler):
     """
 
     success_code = 200
+    per_page = None
     optional_query_keys = ["page", "per_page"]
 
     def perform_action(self):
         _list = []
         offset = int(self.queryparams.get("page", 0))
-        limit = self.queryparams.get("per_page")
+        limit = self.queryparams.get("per_page") or self.per_page
         end = None
         if limit is not None:
             offset = offset * int(limit)
