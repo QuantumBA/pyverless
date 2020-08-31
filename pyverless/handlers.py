@@ -77,7 +77,7 @@ class QueryParamsMixin:
         queryparams = {}
         missing_keys = []
 
-        request_queryparams = self.event.get("queryStringParameters") or {}
+        request_queryparams = self.event.get("multiValueQueryStringParameters") or {}
 
         for key in self.required_query_keys:
             try:
@@ -499,8 +499,8 @@ class ListHandler(ListMixin, QueryParamsMixin, BaseHandler):
 
     def perform_action(self):
         _list = []
-        offset = int(self.queryparams.get("offset", 0))
-        limit = self.queryparams.get("limit") or self.limit
+        offset = int(self.queryparams.get("offset", [0])[0])
+        limit = self.queryparams.get("limit", [None])[0] or self.limit
         end = None
         if limit is not None:
             end = offset + int(limit)
