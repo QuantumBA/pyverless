@@ -325,11 +325,11 @@ class BaseHandler:
             # set user, queryset, object, body and response_body (that is, if the handler
             # uses the apropiate mixin and the method is avaliable)
             pairs = [
+                ('body', 'get_body'),
+                ('queryparams', 'get_queryparams'),
                 ('user', 'get_user'),
                 ('queryset', 'get_queryset'),
                 ('object', 'get_object'),
-                ('body', 'get_body'),
-                ('queryparams', 'get_queryparams'),
                 ('messages', 'get_messages'),
                 ('file', 'get_file'),
                 ('response_body', 'perform_action'),
