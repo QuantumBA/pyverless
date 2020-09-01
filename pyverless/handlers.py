@@ -72,18 +72,27 @@ class QueryParamsMixin:
     required_query_keys = []
     optional_query_keys = []
 
+    required_multivalue = []
+    optional_multivalue = []
+
     def get_queryparams(self):
 
-        queryparams = {}
-        missing_keys = []
+        result = {}
+        missing_keys = set()
 
-        request_queryparams = self.event.get("multiValueQueryStringParameters") or {}
+        queryparams = self.event.get("queryStringParameters") or {}
+        multivalue_queryparams = self.event.get("multiValueQueryStringParameters") or {}
 
         for key in self.required_query_keys:
-            try:
-                queryparams[key] = request_queryparams[key]
-            except KeyError:
-                missing_keys.append(key)
+            if key in queryparams:
+                result[key] = queryparams[key]
+            else:
+                missing_keys.add(key)
+        for key in self.required_multivalue:
+            if key in multivalue_queryparams:
+                result[key] = multivalue_queryparams[key]
+            else:
+                missing_keys.add(key)
 
         if missing_keys:
             message = "Missing key(s): %s" % ', '.join(missing_keys)
@@ -92,12 +101,13 @@ class QueryParamsMixin:
 
         # Collect all optional keys and values.
         for key in self.optional_query_keys:
-            try:
-                queryparams[key] = request_queryparams[key]
-            except KeyError:
-                pass
+            if key in queryparams:
+                result[key] = queryparams[key]
+        for key in self.optional_multivalue:
+            if key in multivalue_queryparams:
+                result[key] = multivalue_queryparams[key]
 
-        return queryparams
+        return result
 
 
 class SQSMessagesMixin:
@@ -499,8 +509,8 @@ class ListHandler(ListMixin, QueryParamsMixin, BaseHandler):
 
     def perform_action(self):
         _list = []
-        offset = int(self.queryparams.get("offset", [0])[0])
-        limit = self.queryparams.get("limit", [None])[0] or self.limit
+        offset = int(self.queryparams.get("offset", 0))
+        limit = self.queryparams.get("limit") or self.limit
         end = None
         if limit is not None:
             end = offset + int(limit)
