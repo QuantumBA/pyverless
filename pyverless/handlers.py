@@ -30,7 +30,7 @@ class RequestBodyMixin:
         missing_keys = []
 
         try:
-            request_body = json.loads(self.event['body']) if self.event['body'] else {}
+            request_body = json.loads(self.event['body']) if self.event.get('body') else {}
             # The next line is necessary because json.loads('null') = None.
             # 'null' may be a possible value of 'body'
             request_body = request_body if request_body else {}
