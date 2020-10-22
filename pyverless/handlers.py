@@ -70,7 +70,6 @@ class QueryParamsMixin:
     """
 
     required_query_keys = []
-    optional_query_keys = []
 
     required_multivalue = []
     optional_multivalue = []
@@ -100,9 +99,7 @@ class QueryParamsMixin:
             raise BadRequest(message=message)
 
         # Collect all optional keys and values.
-        for key in self.optional_query_keys:
-            if key in queryparams:
-                result[key] = queryparams[key]
+        result.update(queryparams)
         for key in self.optional_multivalue:
             if key in multivalue_queryparams:
                 result[key] = multivalue_queryparams[key]
