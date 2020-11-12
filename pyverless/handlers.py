@@ -300,6 +300,7 @@ class BaseHandler:
     event: dict
     error: Union[list, tuple]
     force_error: bool
+    headers: dict
 
     success_code = 200
 
@@ -327,6 +328,7 @@ class BaseHandler:
             self.body = {}
             self.response_body = {}
             self.messages = {}
+            self.headers = {}
             self.force_error = False
 
             # set user, queryset, object, body and response_body (that is, if the handler
@@ -371,7 +373,8 @@ class BaseHandler:
             "headers": {
                 "Access-Control-Allow-Origin": settings.CORS_ORIGIN,
                 "Access-Control-Allow-Headers": settings.CORS_HEADERS,
-                "Access-Control-Allow-Methods": "*"
+                "Access-Control-Allow-Methods": "*",
+                **self.headers,
             }
         }
         return response
