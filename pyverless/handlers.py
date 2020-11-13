@@ -38,6 +38,7 @@ class RequestBodyMixin:
                 return request_body
         except json.decoder.JSONDecodeError:
             message = "Malformed body"
+            print(f"MALFORMED: {self.event.get('body')}")
             self.error = (message, 400)
             raise BadRequest(message=message)
 
