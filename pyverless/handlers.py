@@ -302,6 +302,7 @@ class BaseHandler:
     error: Union[list, tuple]
     force_error: bool
     headers: dict
+    is_base64: bool
 
     success_code = 200
 
@@ -331,6 +332,7 @@ class BaseHandler:
             self.messages = {}
             self.headers = {}
             self.force_error = False
+            self.is_base64 = False
 
             # set user, queryset, object, body and response_body (that is, if the handler
             # uses the apropiate mixin and the method is avaliable)
@@ -376,7 +378,8 @@ class BaseHandler:
                 "Access-Control-Allow-Headers": settings.CORS_HEADERS,
                 "Access-Control-Allow-Methods": "*",
                 **self.headers,
-            }
+            },
+            "isBase64Encoded": self.is_base64
         }
         return response
 
