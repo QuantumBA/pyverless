@@ -37,3 +37,17 @@ class TestConfig():
 
         # The following setting is found in pyverless.config.base_settings
         assert settings.JWT_ALGORITHM == 'HS256'
+
+    def test_settings_from_environ(self):
+        del os.environ['PYVERLESS_SETTINGS']
+        os.environ["SECRET_KEY"] = 'test-secret-key-from-env'
+        os.environ["USER_MODEL"] = 'test_config.models.UserFromEnv'
+        os.environ["JWT_ALGORITHM"] = 'HS256'
+        settings = Settings()
+
+        # The following settings are found in test_config/settings.yml
+        assert settings.SECRET_KEY == 'test-secret-key-from-env'
+        assert settings.USER_MODEL == 'test_config.models.UserFromEnv'
+
+        # The following setting is found in pyverless.config.base_settings
+        assert settings.JWT_ALGORITHM == 'HS256'

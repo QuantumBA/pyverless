@@ -23,19 +23,17 @@ class Settings:
         - A YAML file (.yml/.yaml)
         """
 
+        # load base settings from base settings module
+        self.load_from_module(BASE_SETTINGS_MODULE)
+
         # load user settings from module or yaml file. The source can be passed
         # on istantiation of Settings or through ENVIRONMENT_VARIABLE
         if not source:
             try:
                 source = os.environ[ENVIRONMENT_VARIABLE]
             except KeyError:
-                raise Exception(
-                    "No settings defined. You must either define the environment variable %s "
-                    "pointing to a python module or YAML file or instantiate Settings."
-                    % ENVIRONMENT_VARIABLE)
-
-        # load base settings from base settings module
-        self.load_from_module(BASE_SETTINGS_MODULE)
+                self.load_from_environ()
+                return
 
         # Obtain extension
         _, filext = source.rsplit('.', 1)
@@ -68,6 +66,10 @@ class Settings:
         for setting in dir(settings_module):
             if setting.isupper():
                 setattr(self, setting, getattr(settings_module, setting))
+
+    def load_from_environ(self):
+        for setting, value in os.environ.items():
+            setattr(self, setting, value)
 
 
 settings = Settings()
