@@ -2,6 +2,7 @@ import json
 import logging
 import traceback
 from typing import Union, Any
+import base64
 
 import sentry_sdk
 from sentry_sdk import capture_exception, configure_scope
@@ -30,7 +31,9 @@ class RequestBodyMixin:
         missing_keys = []
 
         try:
-            request_body = json.loads(self.event['body']) if self.event.get('body') else {}
+            request_body = (
+                json.loads(self.event["body"]) if self.event.get("body") else {}
+            )
             # The next line is necessary because json.loads('null') = None.
             # 'null' may be a possible value of 'body'
             request_body = request_body if request_body else {}
@@ -51,7 +54,7 @@ class RequestBodyMixin:
                 missing_keys.append(key)
 
         if missing_keys:
-            message = "Missing key(s): %s" % ', '.join(missing_keys)
+            message = "Missing key(s): %s" % ", ".join(missing_keys)
             self.error = (message, 400)
             raise BadRequest(message=message)
 
@@ -95,7 +98,7 @@ class QueryParamsMixin:
                 missing_keys.add(key)
 
         if missing_keys:
-            message = "Missing key(s): %s" % ', '.join(missing_keys)
+            message = "Missing key(s): %s" % ", ".join(missing_keys)
             self.error = (message, 400)
             raise BadRequest(message=message)
 
@@ -124,7 +127,7 @@ class SQSMessagesMixin:
         messages = []
 
         try:
-            temp_messages = self.event['Records'] if self.event['Records'] else []
+            temp_messages = self.event["Records"] if self.event["Records"] else []
         except json.decoder.JSONDecodeError:
             message = "Malformed message"
             self.error = (message, 400)
@@ -133,10 +136,14 @@ class SQSMessagesMixin:
         for message in temp_messages:
             temp_message = {}
 
-            temp_message['attributes'] = self.get_message_part(message, 'messageAttributes', message['messageId'])
-            temp_message['text_message'] = self.get_message_part(message, 'body', message['messageId'])
-            temp_message['queue_source'] = message['eventSourceARN']
-            temp_message['region'] = message['awsRegion']
+            temp_message["attributes"] = self.get_message_part(
+                message, "messageAttributes", message["messageId"]
+            )
+            temp_message["text_message"] = self.get_message_part(
+                message, "body", message["messageId"]
+            )
+            temp_message["queue_source"] = message["eventSourceARN"]
+            temp_message["region"] = message["awsRegion"]
 
             messages.append(temp_message)
 
@@ -169,21 +176,21 @@ class S3FileMixin:
 
     def get_file(self):
         try:
-            temp_file_event = self.event['Records'] if self.event['Records'] else []
+            temp_file_event = self.event["Records"] if self.event["Records"] else []
         except json.decoder.JSONDecodeError:
             message = "Malformed message"
             self.error = (message, 400)
             raise BadRequest(message=message)
 
         file = {
-            'event_name': temp_file_event[0]['eventName'],
-            'bucket': temp_file_event[0]['s3']['bucket']['name'],
-            'owner': temp_file_event[0]['s3']['bucket']['ownerIdentity']['principalId'],
-            'file_name': temp_file_event[0]['s3']['object']['key'],
+            "event_name": temp_file_event[0]["eventName"],
+            "bucket": temp_file_event[0]["s3"]["bucket"]["name"],
+            "owner": temp_file_event[0]["s3"]["bucket"]["ownerIdentity"]["principalId"],
+            "file_name": temp_file_event[0]["s3"]["object"]["key"],
         }
         # on ObjectRemoved event, the size is not present
-        if temp_file_event[0]['s3']['object'].get('size'):
-            file['size'] = temp_file_event[0]['s3']['object']['size']
+        if temp_file_event[0]["s3"]["object"].get("size"):
+            file["size"] = temp_file_event[0]["s3"]["object"]["size"]
 
         return file
 
@@ -210,9 +217,9 @@ class AuthorizationMixin:
         # TODO: if there is no token or it is invalid it should return 401 instead of 403
         # see: https://stackoverflow.com/questions/50143518/401-unauthorized-vs-403-forbidden-which-is-the-right-status-code-for-when-the-u?rq=1
         try:
-            user_id = self.event['requestContext']['authorizer']['principalId']
+            user_id = self.event["requestContext"]["authorizer"]["principalId"]
         except KeyError:
-            self.error = ('Unauthorized', 403)
+            self.error = ("Unauthorized", 403)
             raise Unauthorized()
 
         UserModel = get_user_model()
@@ -221,7 +228,7 @@ class AuthorizationMixin:
         if user:
             return user
         else:
-            self.error = ('Unauthorized', 403)
+            self.error = ("Unauthorized", 403)
             raise Unauthorized()
 
 
@@ -237,10 +244,10 @@ class ObjectMixin:
 
     model = None
     serializer = None
-    id_in_path = 'id'
+    id_in_path = "id"
 
     def get_object(self):
-        object_id = self.event['pathParameters'][self.id_in_path]
+        object_id = self.event["pathParameters"][self.id_in_path]
 
         # When get_queryset is overriden by the user, the queryset it returns may
         # be a list. Is such case, the list has to be filtered to get the
@@ -337,14 +344,14 @@ class BaseHandler:
             # set user, queryset, object, body and response_body (that is, if the handler
             # uses the apropiate mixin and the method is avaliable)
             pairs = [
-                ('body', 'get_body'),
-                ('queryparams', 'get_queryparams'),
-                ('user', 'get_user'),
-                ('queryset', 'get_queryset'),
-                ('object', 'get_object'),
-                ('messages', 'get_messages'),
-                ('file', 'get_file'),
-                ('response_body', 'perform_action'),
+                ("body", "get_body"),
+                ("queryparams", "get_queryparams"),
+                ("user", "get_user"),
+                ("queryset", "get_queryset"),
+                ("object", "get_object"),
+                ("messages", "get_messages"),
+                ("file", "get_file"),
+                ("response_body", "perform_action"),
             ]
 
             for attr, method in pairs:
@@ -356,7 +363,11 @@ class BaseHandler:
                             tb = traceback.format_exc()
                             return self.render_500_error_response(e, tb)
                 if self.error:
-                    return self.render_error_response(self.error[0], self.error[1], self.error[2] if len(self.error) == 3 else None)
+                    return self.render_error_response(
+                        self.error[0],
+                        self.error[1],
+                        self.error[2] if len(self.error) == 3 else None,
+                    )
 
             return self.render_response(self.response_body, self.success_code)
 
@@ -372,14 +383,16 @@ class BaseHandler:
         """
         response = {
             "statusCode": status_code,
-            "body": json.dumps(body),
+            "body": json.dumps(body)
+            if not self.is_base64
+            else base64.b64encode(body).decode("utf-8"),
             "headers": {
                 "Access-Control-Allow-Origin": settings.CORS_ORIGIN,
                 "Access-Control-Allow-Headers": settings.CORS_HEADERS,
                 "Access-Control-Allow-Methods": "*",
                 **self.headers,
             },
-            "isBase64Encoded": self.is_base64
+            "isBase64Encoded": self.is_base64,
         }
         return response
 
@@ -388,10 +401,7 @@ class BaseHandler:
         Given a message and error status_code, returns a dictionary in the format of a valid
         AWS handler response with our error body definition. This allows us to be consistent.
         """
-        body = {
-            "code": status_code,
-            "message": message
-        }
+        body = {"code": status_code, "message": message}
         if field:
             body["field"] = field
         if not self.force_error:
@@ -421,7 +431,7 @@ class BaseHandler:
             with configure_scope() as scope:
 
                 if self.user:
-                    scope.user = {'id': self.user.uid, 'email': self.user.email}
+                    scope.user = {"id": self.user.uid, "email": self.user.email}
 
                 scope.set_tag("stage", settings.STAGE)
                 scope.set_extra("class", self.__class__)
@@ -433,10 +443,7 @@ class BaseHandler:
         # Send an 500 error response with traceback and event information in the
         # response body if DEBUG setting variable is set to True.
         if settings.DEBUG:
-            message = {
-                "traceback": tb,
-                "event": self.event
-            }
+            message = {"traceback": tb, "event": self.event}
         else:
             message = "Internal Server Error"
 
@@ -519,7 +526,7 @@ class ListHandler(ListMixin, QueryParamsMixin, BaseHandler):
         if limit is not None:
             end = offset + int(limit)
 
-        for obj in self.queryset[offset: end]:
+        for obj in self.queryset[offset:end]:
             _list.append(self.serialize(obj))
         return _list
 
