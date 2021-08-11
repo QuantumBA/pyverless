@@ -82,7 +82,10 @@ class QueryParamsMixin:
         queryparams = self.event.get("queryStringParameters") or {}
         multivalue_queryparams = self.event.get("multiValueQueryStringParameters") or {}
 
-        result = {**queryparams, **multivalue_queryparams}
+        result = queryparams
+        for k, v in multivalue_queryparams.items():
+            if len(v) > 1:
+                result[k] = v
 
         for key in self.required_query_keys:
             if key not in queryparams:
