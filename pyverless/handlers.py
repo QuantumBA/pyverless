@@ -74,7 +74,9 @@ class QueryParamsMixin:
     """
 
     required_query_keys = []
+
     required_multivalue = []
+    optional_multivalue = []
 
     def get_queryparams(self):
         missing_keys = set()
@@ -83,22 +85,27 @@ class QueryParamsMixin:
         multivalue_queryparams = self.event.get("multiValueQueryStringParameters") or {}
 
         result = queryparams
-        for k, v in multivalue_queryparams.items():
-            if len(v) > 1:
-                result[k] = v
 
         for key in self.required_query_keys:
-            if key not in queryparams:
+            if key in queryparams:
+                result[key] = queryparams[key]
+            else:
                 missing_keys.add(key)
-
         for key in self.required_multivalue:
-            if key not in multivalue_queryparams:
+            if key in multivalue_queryparams:
+                result[key] = multivalue_queryparams[key]
+            else:
                 missing_keys.add(key)
 
         if missing_keys:
             message = "Missing key(s): %s" % ", ".join(missing_keys)
             self.error = (message, 400)
             raise BadRequest(message=message)
+
+        # Collect all optional keys and values.
+        for key in self.optional_multivalue:
+            if key in multivalue_queryparams:
+                result[key] = multivalue_queryparams[key]
 
         return result
 
