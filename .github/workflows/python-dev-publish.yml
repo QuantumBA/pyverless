@@ -1,12 +1,16 @@
 name: Upload Python Dev Package
 
 on:
-  push:
-    branches:
-      - develop
+  workflow_run:
+    workflows: [ "Main" ]
+    branches: [ develop ]
+    types:
+      - completed
 
 jobs:
-  build:
+  deploy:
+
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-18.04
     environment: develop
 
