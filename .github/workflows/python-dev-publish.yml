@@ -23,11 +23,8 @@ jobs:
       with:
         poetry-version: 1.1.8
 
-    - name: add test repository
-      run: poetry config repositories.test https://test.pypi.org/legacy/
-
     - name: upload lib
       env:
         POETRY_HTTP_BASIC_PYPI_USERNAME: ${{ secrets.POETRY_HTTP_BASIC_PYPI_USERNAME }}
         POETRY_HTTP_BASIC_PYPI_PASSWORD: ${{ secrets.POETRY_HTTP_BASIC_PYPI_PASSWORD }}
-      run: poetry build && poetry publish -r test
+      run: poetry config repositories.test https://test.pypi.org/legacy/ && poetry build && poetry publish -r test
