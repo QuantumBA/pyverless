@@ -1,16 +1,13 @@
 name: Upload Python Dev Package
 
 on:
-  workflow_run:
-    workflows: [ "Main" ]
-    branches: [ develop ]
-    types:
-      - completed
+  push:
+    branches:
+      - develop
 
 jobs:
   deploy:
 
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-18.04
     environment: develop
 
@@ -26,6 +23,12 @@ jobs:
       uses: abatilo/actions-poetry@v2.0.0
       with:
         poetry-version: 1.1.8
+
+    - name: install dependencies
+      run: poetry install
+
+    - name: Test with pytest
+      run: poetry run pytest --cov=pyverless --cov-fail-under=80 --cov-report xml
 
     - name: upload lib
       env:
