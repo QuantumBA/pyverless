@@ -25,6 +25,5 @@ jobs:
 
     - name: upload lib
       env:
-        POETRY_HTTP_BASIC_PYPI_USERNAME: ${{ secrets.POETRY_HTTP_BASIC_PYPI_USERNAME }}
-        POETRY_HTTP_BASIC_PYPI_PASSWORD: ${{ secrets.POETRY_HTTP_BASIC_PYPI_PASSWORD }}
+        POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PIP_TOKEN }}
       run: poetry config repositories.test https://test.pypi.org/legacy/ && poetry build && poetry publish -r test
