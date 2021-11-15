@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-18.04
+    environment: develop
 
     steps:
     - uses: actions/checkout@v2
@@ -27,4 +28,7 @@ jobs:
       run: poetry config repositories.test https://test.pypi.org/legacy/
 
     - name: upload lib
+      env:
+        POETRY_HTTP_BASIC_PYPI_USERNAME: ${{ secrets.POETRY_HTTP_BASIC_PYPI_USERNAME }}
+        POETRY_HTTP_BASIC_PYPI_PASSWORD: ${{ secrets.POETRY_HTTP_BASIC_PYPI_PASSWORD }}
       run: poetry build && poetry publish -r test
