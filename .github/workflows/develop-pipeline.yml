@@ -1,4 +1,4 @@
-name: Upload Python Dev Package
+name: Develop Pipeline
 
 on:
   push:
