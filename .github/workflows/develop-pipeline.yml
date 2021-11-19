@@ -1,10 +1,15 @@
-name: Main
+name: Develop Pipeline
 
-on: [push]
+on:
+  push:
+    branches:
+      - develop
 
 jobs:
-  build:
+  deploy:
+
     runs-on: ubuntu-18.04
+    environment: develop
 
     steps:
     - uses: actions/checkout@v2
@@ -24,3 +29,9 @@ jobs:
 
     - name: Test with pytest
       run: poetry run pytest --cov=pyverless --cov-fail-under=80 --cov-report xml
+
+    - name: upload lib
+      env:
+        USER: ${{ secrets.PIP_USER }}
+        PASSWORD: ${{ secrets.PIP_PASSWORD }}
+      run: poetry config repositories.test https://test.pypi.org/legacy/ && poetry build && poetry publish -r test --username $USER --password $PASSWORD

@@ -1,0 +1,37 @@
+name: Production Pipeline
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+
+    runs-on: ubuntu-18.04
+    environment: develop
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Run poetry image
+      uses: abatilo/actions-poetry@v2.0.0
+      with:
+        poetry-version: 1.1.8
+
+    - name: install dependencies
+      run: poetry install
+
+    - name: Test with pytest
+      run: poetry run pytest --cov=pyverless --cov-fail-under=80 --cov-report xml
+
+    - name: upload lib
+      env:
+        USER: ${{ secrets.PIP_USER }}
+        PASSWORD: ${{ secrets.PIP_PASSWORD }}
+      run: poetry build && poetry publish --username $USER --password $PASSWORD
