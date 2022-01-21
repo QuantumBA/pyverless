@@ -2,7 +2,7 @@ import unittest
 from datetime import datetime
 from enum import Enum
 
-from shared.api_gateway_handler import input_serializer
+from pyverless.serialization import input_serializer
 from tests.utils import fake_functions
 
 
