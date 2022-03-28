@@ -1,7 +1,8 @@
+import uuid
 from abc import ABC, abstractmethod
 from datetime import datetime
 from enum import Enum
-from typing import Any, Type
+from typing import Type, List
 
 
 class SerializationError(Exception):
@@ -34,6 +35,8 @@ class BaseSerializer(SerializerInterface):
 
 
 class Serializer(BaseSerializer):
+    optional_fields: List[str] = []
+
     def validate_data(self, input_data):
         super().validate_data(input_data)
         if type(input_data) != dict:
@@ -48,7 +51,8 @@ class Serializer(BaseSerializer):
                 if field_name in input_data:
                     result[field_name] = serializer.serialize(input_data[field_name])
                 else:
-                    raise SerializationError(f"Data is mandatory")
+                    if field_name not in self.optional_fields:
+                        raise SerializationError(f"Data is mandatory")
             except Exception as ex:
                 raise SerializationError(f"Field: {field_name} Error: {str(ex)}")
         return result
@@ -95,6 +99,17 @@ class IntegerSerializer(BaseSerializer):
             raise SerializationError("Data is not a integer")
 
 
+class FloatSerializer(BaseSerializer):
+    def validate_data(self, input_data):
+        super().validate_data(input_data)
+        if type(input_data) not in [float, int]:
+            raise SerializationError("Data is not a decimal")
+
+    def transform_data(self, input_data):
+        input_data = super().transform_data(input_data)
+        return float(input_data)
+
+
 class BooleanSerializer(BaseSerializer):
     def validate_data(self, input_data):
         super().validate_data(input_data)
@@ -139,3 +154,12 @@ class EnumSerializer(StringSerializer):
         input_data = super().transform_data(input_data)
         input_data = self._enum_item(input_data)
         return input_data
+
+
+class UuidSerializer(StringSerializer):
+    def validate_data(self, input_data):
+        super().validate_data(input_data)
+        try:
+            uuid.UUID(input_data, version=4)
+        except ValueError:
+            raise SerializationError("Uuid is not valid")

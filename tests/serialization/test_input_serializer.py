@@ -39,6 +39,23 @@ class TestInputSerializer(unittest.TestCase):
         with self.assertRaises(input_serializer.SerializationError):
             serializer.serialize(fake_functions.fake_random_word())
 
+    def test_float_serializer(self):
+        serializer = input_serializer.FloatSerializer()
+        test_input = fake_functions.fake_random_decimal_number()
+        result = serializer.serialize(test_input)
+        self.assertEqual(result, test_input)
+
+    def test_float_serializer_with_integer_input(self):
+        serializer = input_serializer.FloatSerializer()
+        test_input = fake_functions.fake_random_number()
+        result = serializer.serialize(test_input)
+        self.assertEqual(result, test_input)
+
+    def test_float_serializer_error(self):
+        serializer = input_serializer.FloatSerializer()
+        with self.assertRaises(input_serializer.SerializationError):
+            serializer.serialize(fake_functions.fake_random_word())
+
     def test_boolean_serializer(self):
         serializer = input_serializer.BooleanSerializer()
         test_input = True
@@ -119,6 +136,17 @@ class TestInputSerializer(unittest.TestCase):
         with self.assertRaises(input_serializer.SerializationError):
             serializer.serialize({})
 
+    def test_dict_serializer_optional_fields(self):
+        class SerializerTest(input_serializer.Serializer):
+            optional_fields = ["test"]
+
+            test = input_serializer.IntegerSerializer()
+            test_1 = input_serializer.IntegerSerializer()
+
+        serializer = SerializerTest()
+        result = serializer.serialize({"test_1": 1})
+        self.assertEqual(result, {"test_1": 1})
+
     def test_dict_serializer_error_items(self):
         class SerializerTest(input_serializer.Serializer):
             test = input_serializer.IntegerSerializer()
@@ -133,9 +161,8 @@ class TestInputSerializer(unittest.TestCase):
             ERROR = "error"
 
         serializer = input_serializer.EnumSerializer(EnumTest)
-        input_enum = fake_functions.fake_random_enum(EnumTest)
-        output = serializer.serialize(input_enum.value)
-        self.assertEqual(output, input_enum)
+        output = serializer.serialize("ok")
+        self.assertEqual(output, EnumTest.OK)
 
     def test_enum_serializer_error_choices(self):
         class EnumTest(Enum):
@@ -145,3 +172,15 @@ class TestInputSerializer(unittest.TestCase):
         serializer = input_serializer.EnumSerializer(EnumTest)
         with self.assertRaises(input_serializer.SerializationError):
             serializer.serialize("not found")
+
+    def test_uuid_serializer(self):
+        serializer = input_serializer.UuidSerializer()
+        input_data = str(fake_functions.fake_uuid())
+        output = serializer.serialize(input_data)
+        self.assertEqual(output, input_data)
+
+    def test_uuid_serializer_error(self):
+        serializer = input_serializer.UuidSerializer()
+        input_data = fake_functions.fake_random_word()
+        with self.assertRaises(input_serializer.SerializationError):
+            serializer.serialize(input_data)

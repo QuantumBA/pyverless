@@ -24,9 +24,9 @@ def fake_date(start_date: date = None, end_date: date = None):
 
 
 def fake_date_str(
-    str_format: str = "%Y-%m-%d",
-    start_date: date = None,
-    end_date: date = None,
+        str_format: str = "%Y-%m-%d",
+        start_date: date = None,
+        end_date: date = None,
 ):
     random_date = fake_date(start_date, end_date)
     return random_date.strftime(str_format)
@@ -56,3 +56,13 @@ def fake_random_selection(selection_list: List, length: int = 1, unique: bool = 
 def fake_random_enum(custom_enum: Type[Enum]):
     selection = fake_random_selection([enum_item.value for enum_item in custom_enum])[0]
     return custom_enum(selection)
+
+
+def fake_random_decimal_number(left_digits: int = 3, right_digits: int = 2):
+    return fake.pyfloat(
+        left_digits=left_digits, right_digits=right_digits, positive=True
+    )
+
+
+def fake_uuid():
+    return fake.uuid4()
