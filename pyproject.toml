@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyverless"
-version = "0.0.40"
+version = "0.0.41"
 authors = ["rperez <rperez@op2aim.io>"]
 description="A mini-framework providing tools to help you make complex APIs with serverless"
 readme="README.md"
@@ -37,6 +37,7 @@ sentry-sdk = ">=0.5.1"
 ipdb = "==0.13.9"
 pytest = "==3.1.3"
 pytest-cov = "==2.5.1"
+Faker = "==9.3.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
