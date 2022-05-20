@@ -4,8 +4,8 @@ from os import environ
 from typing import List, Dict, Type
 
 from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
-
 from pyverless.decorators import warmup
+
 from pyverless.utils.logging import logger
 
 
@@ -20,13 +20,18 @@ class ApiGatewayResponse:
 class ErrorHandler:
     exception: Type[Exception]
     status_code: int
-    msg: Dict = None
+    msg: str = None
+    error_code: int = None
 
     def is_my_exception(self, ex) -> bool:
         return type(ex) == self.exception
 
     def generate_error_message(self, ex) -> Dict:
-        return self.msg if self.msg else str(ex)
+        message = self.msg if self.msg else str(ex)
+        error_dict = {"msg": message}
+        if self.error_code:
+            error_dict["error_code"] = self.error_code
+        return error_dict
 
 
 class ApiGatewayHandler(ABC):
