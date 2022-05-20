@@ -65,12 +65,15 @@ class TestApiGatewayHandlerStandalone(unittest.TestCase):
         )
 
     def test_handler_controlled_error_response_without_message(self):
+        class CustomException(Exception):
+            pass
+
         class TestHandler(ApiGatewayHandlerStandalone):
 
-            error_handlers = [ErrorHandler(exception=KeyError, status_code=400)]
+            error_handlers = [ErrorHandler(exception=CustomException, status_code=400)]
 
             def perform_action(self):
-                raise KeyError("test")
+                raise CustomException("test")
 
         handler = TestHandler.as_handler()
         output = handler(
