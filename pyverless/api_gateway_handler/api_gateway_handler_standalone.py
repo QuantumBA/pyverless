@@ -4,16 +4,13 @@ from typing import Dict
 
 from pyverless.config import settings
 
-from pyverless.api_gateway_handler.api_gateway_handler import (
-    ApiGatewayHandler,
-    ApiGatewayResponse,
-)
+from shared.api_gateway_handler.api_gateway_handler_v2 import ApiGatewayHandlerV2
 
 
-class ApiGatewayHandlerStandalone(ApiGatewayHandler, ABC):
+class ApiGatewayHandlerStandalone(ApiGatewayHandlerV2, ABC):
     headers: Dict = {}
 
-    def render_response(self, response: ApiGatewayResponse):
+    def render_response(self):
         headers = {
             "Access-Control-Allow-Origin": settings.CORS_ORIGIN,
             "Access-Control-Allow-Headers": settings.CORS_HEADERS,
@@ -22,7 +19,7 @@ class ApiGatewayHandlerStandalone(ApiGatewayHandler, ABC):
         if self.headers:
             headers = {**headers, **self.headers}
         return {
-            "statusCode": response.status_code,
-            "body": json.dumps(response.body),
+            "statusCode": self.response.status_code,
+            "body": json.dumps(self.response.body),
             "headers": headers,
         }
