@@ -1,7 +1,7 @@
 import logging
 from abc import abstractmethod, ABC
 
-from shared.utils.logging import initialize_logger
+from pyverless.utils.logging import initialize_logger
 
 logger = logging.getLogger("pyverless")
 
