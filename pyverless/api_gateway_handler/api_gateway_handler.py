@@ -5,7 +5,7 @@ from typing import List, Dict, Type
 
 from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
 
-from shared.events_handler.events_handler_v2 import EventsHandlerV2
+from pyverless.events_handler.events_handler import EventsHandler
 
 logger = logging.getLogger("pyverless")
 
@@ -35,7 +35,7 @@ class ErrorHandler:
         return error_dict
 
 
-class ApiGatewayHandlerV2(EventsHandlerV2, ABC):
+class ApiGatewayHandler(EventsHandler, ABC):
     success_code = 200
 
     event_parsed: APIGatewayProxyEvent = None
@@ -85,13 +85,13 @@ class ApiGatewayHandlerV2(EventsHandlerV2, ABC):
 
         logger.exception(exception)
         return ApiGatewayResponse(
-            status_code=500, body={"msg": "Internal Server Error"}
+            status_code=500, body={"message": "Internal Server Error"}
         )
 
     def process_unhandled_error(self, error):
         logger.exception(error)
         return ApiGatewayResponse(
-            status_code=500, body={"msg": "Internal Server Error"}
+            status_code=500, body={"message": "Internal Server Error"}
         )
 
     @abstractmethod
