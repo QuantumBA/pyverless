@@ -1,12 +1,13 @@
+import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from os import environ
 from typing import List, Dict, Type
 
 from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
-from pyverless.decorators import warmup
 
-from pyverless.utils.logging import logger
+from pyverless.events_handler.events_handler import EventsHandler
+
+logger = logging.getLogger("pyverless")
 
 
 @dataclass
@@ -28,35 +29,21 @@ class ErrorHandler:
 
     def generate_error_message(self, ex) -> Dict:
         message = self.msg if self.msg else str(ex)
-        error_dict = {"msg": message}
+        error_dict = {"message": message}
         if self.error_code:
             error_dict["error_code"] = self.error_code
         return error_dict
 
 
-class ApiGatewayHandler(ABC):
+class ApiGatewayHandler(EventsHandler, ABC):
     success_code = 200
 
     event_parsed: APIGatewayProxyEvent = None
-    event: dict = None
-    context = None
+    event_parser = APIGatewayProxyEvent
 
     error_handlers: List[ErrorHandler] = []
 
-    @abstractmethod
-    def perform_action(self):
-        raise NotImplementedError()
-
-    def lambda_handler(self, event, context):
-        self.event = event
-        self.context = context
-
-        environ["AWS_REQUEST_ID"] = (
-            context.aws_request_id if context else "default_aws_request_id"
-        )
-
-        self.event_parsed = APIGatewayProxyEvent(event)
-
+    def execute_lambda_code(self):
         logger.info(
             {
                 "type": "REQUEST_STARTED",
@@ -68,6 +55,7 @@ class ApiGatewayHandler(ABC):
         )
 
         try:
+
             response_body = self.perform_action()
 
             response = ApiGatewayResponse(
@@ -75,7 +63,7 @@ class ApiGatewayHandler(ABC):
             )
 
         except Exception as ex:
-            response = self.process_errors(ex)
+            response = self.process_error(exception=ex)
 
         logger.info(
             {
@@ -85,12 +73,9 @@ class ApiGatewayHandler(ABC):
             }
         )
 
-        return self.render_response(response)
+        return response
 
-    def process_response(self, response_body: Dict) -> ApiGatewayResponse:
-        return ApiGatewayResponse(status_code=self.success_code, body=response_body)
-
-    def process_errors(self, exception):
+    def process_error(self, exception):
         for handler in self.error_handlers:
             if handler.is_my_exception(exception):
                 return ApiGatewayResponse(
@@ -100,22 +85,19 @@ class ApiGatewayHandler(ABC):
 
         logger.exception(exception)
         return ApiGatewayResponse(
-            status_code=500, body={"msg": "Internal Server Error"}
+            status_code=500, body={"message": "Internal Server Error"}
+        )
+
+    def process_unhandled_error(self, error):
+        logger.exception(error)
+        return ApiGatewayResponse(
+            status_code=500, body={"message": "Internal Server Error"}
         )
 
     @abstractmethod
-    def render_response(self, response: ApiGatewayResponse):
+    def perform_action(self):
         raise NotImplementedError()
 
-    @classmethod
-    def as_handler(cls):
-        """
-        Returns a lambda handler function.
-        """
-
-        @warmup
-        def handler(event, context):
-            self = cls()
-            return self.lambda_handler(event, context)
-
-        return handler
+    @abstractmethod
+    def render_response(self):
+        raise NotImplementedError()

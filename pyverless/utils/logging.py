@@ -1,20 +1,22 @@
-from logging import config, getLogger, INFO, ERROR
+from logging import config, INFO, ERROR
 from os import environ
-from pyverless.config import settings
+
+from pythonjsonlogger.jsonlogger import JsonFormatter
 
 
-test_env = "TEST_ENV" in environ
-logger_level = environ.get("LOGGER_LEVEL", "DEBUG")
+def initialize_logger(
+    logger_level: str = "DEBUG",
+    environment: str = "dev",
+    sentry_dns: str = None,
+    aws_request_id: str = "default_aws_request_id",
+):
 
-formatter_config = {
-    "format": "%(asctime)s : %(levelname)s : %(name)s : %(funcName)s : %(message)s",
-    "datefmt": "%d-%m-%Y %I:%M:%S",
-}
+    formatter_config = {
+        "format": "%(asctime)s : %(levelname)s : %(name)s : %(funcName)s : %(message)s",
+        "datefmt": "%d-%m-%Y %I:%M:%S",
+    }
 
-
-if not test_env:
-
-    from pythonjsonlogger.jsonlogger import JsonFormatter
+    environ["AWS_REQUEST_ID"] = aws_request_id
 
     class CustomJsonFormatter(JsonFormatter):
         aws_request_id = None
@@ -31,37 +33,35 @@ if not test_env:
 
     formatter_config["()"] = CustomJsonFormatter
 
-    if settings.USE_SENTRY:
+    if sentry_dns:
         import sentry_sdk
         from sentry_sdk.integrations.logging import LoggingIntegration
 
         sentry_logging = LoggingIntegration(level=INFO, event_level=ERROR)
         sentry_sdk.init(
-            dsn=settings.SENTRY_DNS,
+            dsn=sentry_dns,
             integrations=[sentry_logging],
-            environment=settings.STAGE,
+            environment=environment,
         )
 
-config.dictConfig(
-    {
-        "version": 1,
-        "disable_existing_loggers": False,
-        "loggers": {
-            "pyverless": {
-                "handlers": ["handler_for_pyverless"],
-                "level": logger_level,
-                "propagate": False,
-            }
-        },
-        "handlers": {
-            "handler_for_pyverless": {
-                "formatter": "formatter_for_pyverless",
-                "class": "logging.StreamHandler",
-                "level": logger_level,
-            }
-        },
-        "formatters": {"formatter_for_pyverless": formatter_config},
-    }
-)
-
-logger = getLogger("pyverless")
+    config.dictConfig(
+        {
+            "version": 1,
+            "disable_existing_loggers": False,
+            "loggers": {
+                "pyverless": {
+                    "handlers": ["handler_for_pyverless"],
+                    "level": logger_level,
+                    "propagate": False,
+                }
+            },
+            "handlers": {
+                "handler_for_pyverless": {
+                    "formatter": "formatter_for_pyverless",
+                    "class": "logging.StreamHandler",
+                    "level": logger_level,
+                }
+            },
+            "formatters": {"formatter_for_pyverless": formatter_config},
+        }
+    )
