@@ -142,3 +142,25 @@ class TestApiGatewayHandlerStandalone(unittest.TestCase):
                 "statusCode": 500,
             },
         )
+
+    def test_handler_uncontrolled_error_in_parser_response(self):
+        class TestHandler(ApiGatewayHandlerStandalone):
+            def perform_action(self):
+                raise KeyError()
+
+        handler = TestHandler.as_handler()
+        output = handler(
+            {}, create_lambda_context()
+        )
+        self.assertEqual(
+            output,
+            {
+                "body": '{"message": "Internal Server Error"}',
+                "headers": {
+                    "Access-Control-Allow-Headers": "*",
+                    "Access-Control-Allow-Methods": "*",
+                    "Access-Control-Allow-Origin": "*",
+                },
+                "statusCode": 500,
+            },
+        )
