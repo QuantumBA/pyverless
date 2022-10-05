@@ -56,7 +56,9 @@ class ApiGatewayHandler(EventsHandler, ABC):
 
         try:
 
+            self.preprocess_function()
             response_body = self.perform_action()
+            self.postprocess_function()
 
             response = ApiGatewayResponse(
                 status_code=self.success_code, body=response_body
@@ -74,6 +76,12 @@ class ApiGatewayHandler(EventsHandler, ABC):
         )
 
         return response
+
+    def preprocess_function(self):
+        pass
+
+    def postprocess_function(self):
+        pass
 
     def process_error(self, exception):
         for handler in self.error_handlers:
