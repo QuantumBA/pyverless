@@ -91,13 +91,14 @@ class ApiGatewayHandler(EventsHandler, ABC):
                     body=handler.generate_error_message(exception),
                 )
 
-        return ApiGatewayResponse(
-            status_code=500, body={"message": "Internal Server Error"}
-        )
+        return self._process_500_errors(uncontrolled_error=exception)
 
     def process_unhandled_error(self, error):
-        logger.exception(error)
-        self.response = ApiGatewayResponse(
+        self.response = self._process_500_errors(uncontrolled_error=error)
+
+    def _process_500_errors(self, uncontrolled_error) -> ApiGatewayResponse:
+        logger.exception(uncontrolled_error)
+        return ApiGatewayResponse(
             status_code=500, body={"message": "Internal Server Error"}
         )
 
