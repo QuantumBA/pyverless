@@ -12,6 +12,19 @@ All notable changes to this project will be documented in this file.
 
 ### Removed
 
+## [0.0.48] - 2022-10-27
+### Added
+
+### Changed
+
+### Fixed
+- Add logging of uncontrolled errors in api gateway
+
+### Deprecated
+
+### Removed
+
+
 ## [0.0.47] - 2022-10-20
 ### Added
 
