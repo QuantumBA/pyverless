@@ -41,18 +41,20 @@ class ApiGatewayHandler(EventsHandler, ABC):
     event_parsed: APIGatewayProxyEvent = None
     event_parser = APIGatewayProxyEvent
 
+    logging_functions = [logger.info]
     error_handlers: List[ErrorHandler] = []
 
     def execute_lambda_code(self):
-        logger.info(
-            {
-                "type": "REQUEST_STARTED",
-                "path": self.event_parsed.path,
-                "headers": self.event_parsed.headers,
-                "method": self.event_parsed.http_method,
-                "message": "request started",
-            }
-        )
+        for function in self.logging_functions:
+            function(
+                {
+                    "type": "REQUEST_STARTED",
+                    "path": self.event_parsed.path,
+                    "headers": self.event_parsed.headers,
+                    "method": self.event_parsed.http_method,
+                    "message": "request started",
+                }
+            )
 
         try:
 
@@ -67,13 +69,14 @@ class ApiGatewayHandler(EventsHandler, ABC):
         except Exception as ex:
             response = self.process_error(exception=ex)
 
-        logger.info(
-            {
-                "type": "REQUEST_FINISHED",
-                "message": "request finished",
-                "status_code": response.status_code,
-            }
-        )
+        for function in self.logging_functions:
+            function(
+                {
+                    "type": "REQUEST_FINISHED",
+                    "message": "request finished",
+                    "status_code": response.status_code,
+                }
+            )
 
         return response
 
