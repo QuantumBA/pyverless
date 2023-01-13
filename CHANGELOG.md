@@ -12,6 +12,17 @@ All notable changes to this project will be documented in this file.
 
 ### Removed
 
+## [0.0.49] - 2023-01-10
+### Added
+- Added logging function attribute to ApiGatewayHandler so multiple logger functions can be used. 
+### Changed
+
+### Fixed
+
+### Deprecated
+
+### Removed
+
 ## [0.0.48] - 2022-10-27
 ### Added
 

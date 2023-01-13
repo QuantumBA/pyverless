@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyverless"
-version = "0.0.48"
+version = "0.0.49"
 authors = ["rperez <rperez@op2aim.io>"]
 description="A mini-framework providing tools to help you make complex APIs with serverless"
 readme="README.md"
