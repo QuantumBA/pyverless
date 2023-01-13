@@ -45,10 +45,12 @@ class ApiGatewayHandler(EventsHandler, ABC):
     error_handlers: List[ErrorHandler] = []
 
     def execute_lambda_code(self):
+        request_id = self.context.aws_request_id
         for function in self.logging_functions:
             function(
                 {
                     "type": "REQUEST_STARTED",
+                    "request_id": request_id,
                     "path": self.event_parsed.path,
                     "headers": self.event_parsed.headers,
                     "method": self.event_parsed.http_method,
@@ -73,6 +75,7 @@ class ApiGatewayHandler(EventsHandler, ABC):
             function(
                 {
                     "type": "REQUEST_FINISHED",
+                    "request_id": request_id,
                     "message": "request finished",
                     "status_code": response.status_code,
                 }
