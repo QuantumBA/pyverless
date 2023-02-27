@@ -11,6 +11,8 @@ def initialize_logger(
     aws_request_id: str = "default_aws_request_id",
 ):
 
+    sentry_dns = environ.get("SENTRY_DNS", None) or sentry_dns
+
     formatter_config = {
         "format": "%(asctime)s : %(levelname)s : %(name)s : %(funcName)s : %(message)s",
         "datefmt": "%d-%m-%Y %I:%M:%S",
