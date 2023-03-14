@@ -40,5 +40,5 @@ class TestEventsHandler(unittest.TestCase):
         handler = TestHandler.as_handler()
         with self.assertRaises(KeyError):
             handler(
-                None, create_lambda_context()
+                {}, create_lambda_context()
             )

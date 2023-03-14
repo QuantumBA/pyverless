@@ -1,6 +1,7 @@
 import logging
 from abc import abstractmethod, ABC
 
+from pyverless.decorators import warmup
 from pyverless.utils.logging import initialize_logger
 
 logger = logging.getLogger("pyverless")
@@ -62,7 +63,7 @@ class EventsHandler(ABC):
         """
         Returns a lambda handler function.
         """
-
+        @warmup
         def handler(event, context):
 
             initialize_logger(
