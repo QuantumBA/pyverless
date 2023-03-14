@@ -12,6 +12,19 @@ All notable changes to this project will be documented in this file.
 
 ### Removed
 
+## [0.0.50] - 2023-03-14
+### Added
+
+### Changed
+
+### Fixed
+- Add warmup decorator to handler
+
+### Deprecated
+
+### Removed
+
+
 ## [0.0.49] - 2023-01-10
 ### Added
 - Added logging function attribute to ApiGatewayHandler so multiple logger functions can be used. 
