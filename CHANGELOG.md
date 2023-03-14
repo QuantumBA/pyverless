@@ -12,7 +12,7 @@ All notable changes to this project will be documented in this file.
 
 ### Removed
 
-## [0.0.50] - 2023-03-14
+## [0.0.51] - 2023-03-14
 ### Added
 
 ### Changed
