@@ -32,6 +32,5 @@ jobs:
 
     - name: upload lib
       env:
-        USER: ${{ secrets.PIP_USER }}
-        PASSWORD: ${{ secrets.PIP_PASSWORD }}
-      run: poetry build && poetry publish --username $USER --password $PASSWORD
+        TOKEN: ${{ secrets.PIP_TOKEN }}
+      run: poetry build && POETRY_PYPI_TOKEN_PYPI=$TOKEN poetry publish
