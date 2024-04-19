@@ -51,9 +51,9 @@ class ApiGatewayHandler(EventsHandler, ABC):
                 {
                     "type": "REQUEST_STARTED",
                     "request_id": request_id,
-                    "path": self.event_parsed.path,
-                    "headers": self.event_parsed.headers,
-                    "method": self.event_parsed.http_method,
+                    "path": self.event_parsed.path if self.event_parsed else None,
+                    "headers": self.event_parsed.headers if self.event_parsed else None,
+                    "method": self.event_parsed.http_method if self.event_parsed else None,
                     "message": "request started",
                 }
             )

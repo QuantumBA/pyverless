@@ -23,3 +23,13 @@ class ApiGatewayHandlerStandalone(ApiGatewayHandler, ABC):
             "body": json.dumps(self.response.body),
             "headers": headers,
         }
+
+
+class ApiGatewayWSHandlerStandalone(ApiGatewayHandler, ABC):
+    headers: Dict = {}
+
+    def render_response(self):
+        return {
+            "statusCode": self.response.status_code,
+            "body": json.dumps(self.response.body),
+        }
