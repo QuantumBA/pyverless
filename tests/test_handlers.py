@@ -1,7 +1,7 @@
 import json
 from pyverless import handlers
 
-from test_config.models import User, UserSerializer
+from config_test.models import User, UserSerializer
 
 event_sqs = {'Records': [
     {
@@ -221,7 +221,7 @@ class TestHandlers():
 
         assert status_code == 201
         # The response body is an UID. This uid is set in the mock user defined
-        # in test_config.models
+        # in config_test.models
         assert response_body == "b89ee4a1d9ac4dd5aeb242264968aa4e"
 
     def test_retrieve_handler(self):

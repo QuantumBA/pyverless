@@ -3,9 +3,11 @@ import unittest
 from pyverless.api_gateway_handler.api_gateway_handler import ErrorHandler
 from pyverless.api_gateway_handler.api_gateway_handler_standalone import (
     ApiGatewayHandlerStandalone,
+    ApiGatewayWSHandlerStandalone,
 )
 from tests.utils.aws_events_creations import (
     create_api_gateway_event,
+    create_api_gateway_websocket_event,
     create_lambda_context,
 )
 
@@ -38,7 +40,6 @@ class TestApiGatewayHandlerStandalone(unittest.TestCase):
 
     def test_handler_controlled_error_response(self):
         class TestHandler(ApiGatewayHandlerStandalone):
-
             error_handlers = [
                 ErrorHandler(exception=KeyError, msg="error", status_code=400)
             ]
@@ -68,7 +69,6 @@ class TestApiGatewayHandlerStandalone(unittest.TestCase):
             pass
 
         class TestHandler(ApiGatewayHandlerStandalone):
-
             error_handlers = [ErrorHandler(exception=CustomException, status_code=400)]
 
             def perform_action(self):
@@ -93,7 +93,6 @@ class TestApiGatewayHandlerStandalone(unittest.TestCase):
 
     def test_handler_controlled_error_response_with_error_code(self):
         class TestHandler(ApiGatewayHandlerStandalone):
-
             error_handlers = [
                 ErrorHandler(
                     exception=KeyError, msg="error", status_code=400, error_code=2
@@ -149,9 +148,7 @@ class TestApiGatewayHandlerStandalone(unittest.TestCase):
                 raise KeyError()
 
         handler = TestHandler.as_handler()
-        output = handler(
-            {}, create_lambda_context()
-        )
+        output = handler({}, create_lambda_context())
         self.assertEqual(
             output,
             {
@@ -162,5 +159,29 @@ class TestApiGatewayHandlerStandalone(unittest.TestCase):
                     "Access-Control-Allow-Origin": "*",
                 },
                 "statusCode": 500,
+            },
+        )
+
+
+class TestApiGatewayWSHandlerStandalone(unittest.TestCase):
+    def test_handler_ok_response(self):
+        class TestHandler(ApiGatewayWSHandlerStandalone):
+            def perform_action(self):
+                return {
+                    "route_key": self.event_parsed.route_key,
+                    "body": self.event_parsed.body,
+                    "event_type": self.event_parsed.event_type,
+                }
+
+        handler = TestHandler.as_handler()
+        output = handler(
+            create_api_gateway_websocket_event(body={"key": "value"}),
+            create_lambda_context(),
+        )
+        self.assertEqual(
+            output,
+            {
+                "body": '{"route_key": "testRouteKey", "body": {"key": "value"}, "event_type": "MESSAGE"}',
+                "statusCode": 200,
             },
         )

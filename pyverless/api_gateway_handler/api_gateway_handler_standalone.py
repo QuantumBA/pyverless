@@ -4,7 +4,10 @@ from typing import Dict
 
 from pyverless.config import settings
 
-from pyverless.api_gateway_handler.api_gateway_handler import ApiGatewayHandler
+from pyverless.api_gateway_handler.api_gateway_handler import (
+    ApiGatewayHandler,
+    ApiGatewayWSHandler,
+)
 
 
 class ApiGatewayHandlerStandalone(ApiGatewayHandler, ABC):
@@ -22,4 +25,14 @@ class ApiGatewayHandlerStandalone(ApiGatewayHandler, ABC):
             "statusCode": self.response.status_code,
             "body": json.dumps(self.response.body),
             "headers": headers,
+        }
+
+
+class ApiGatewayWSHandlerStandalone(ApiGatewayWSHandler, ABC):
+    headers: Dict = {}
+
+    def render_response(self):
+        return {
+            "statusCode": self.response.status_code,
+            "body": json.dumps(self.response.body),
         }
