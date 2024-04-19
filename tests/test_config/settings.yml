@@ -1,2 +1,0 @@
-USER_MODEL: test_config.models.UserFromYAML
-SECRET_KEY: test-secret-key-from-yml

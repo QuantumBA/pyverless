@@ -1,7 +1,7 @@
 from unittest.mock import patch
 from pyverless.auth import authenticate
 
-from test_config.models import User
+from config_test.models import User
 
 
 class TestAuth():
