@@ -43,3 +43,27 @@ def create_api_gateway_event(
         "multiValueHeaders": multivalue_headers if multivalue_headers else {},
     }
     return event
+
+
+def create_api_gateway_websocket_event(
+    auth: str = "",
+    body: Any = {},
+    connection_id: str = "testConnectionId",
+    event_type: str = "MESSAGE",
+    route_key: str = "testRouteKey",
+) -> dict:
+    event = {
+        "requestContext": {
+            "routeKey": route_key,
+            "eventType": event_type,
+            "contectionId": connection_id,
+            "messageId": "test",
+            "messageDirection": "IN",
+            "stage": "test",
+            "identity": {"sourceIp": "127.0.0.1"},
+            "authorizer": {"principalId": auth},
+        },
+        "body": json.dumps(body) if body else {},
+        "isBase64Encoded": False,
+    }
+    return event
