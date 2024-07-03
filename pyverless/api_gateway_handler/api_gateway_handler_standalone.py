@@ -37,6 +37,7 @@ class ApiGatewayWSHandlerStandalone(ApiGatewayWSHandler, ABC):
             "body": json.dumps(self.response.body),
         }
 
+
 class ApiGatewayStreamingHandlerStandalone(ApiGatewayHandler, ABC):
     headers: Dict = {}
 
