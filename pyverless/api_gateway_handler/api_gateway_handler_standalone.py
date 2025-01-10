@@ -2,12 +2,9 @@ import json
 from abc import ABC
 from typing import Dict
 
-from pyverless.config import settings
-
 from pyverless.api_gateway_handler.api_gateway_handler import (
-    ApiGatewayHandler,
-    ApiGatewayWSHandler,
-)
+    ApiGatewayHandler, ApiGatewayWSHandler)
+from pyverless.config import settings
 
 
 class ApiGatewayHandlerStandalone(ApiGatewayHandler, ABC):
@@ -21,9 +18,15 @@ class ApiGatewayHandlerStandalone(ApiGatewayHandler, ABC):
         }
         if self.headers:
             headers = {**headers, **self.headers}
+
+        content_type = headers.get("Content-Type", "application/json")
         return {
             "statusCode": self.response.status_code,
-            "body": json.dumps(self.response.body),
+            "body": (
+                json.dumps(self.response.body)
+                if content_type == "application/json"
+                else self.response.body
+            ),
             "headers": headers,
         }
 

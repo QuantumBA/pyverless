@@ -2,14 +2,10 @@ import unittest
 
 from pyverless.api_gateway_handler.api_gateway_handler import ErrorHandler
 from pyverless.api_gateway_handler.api_gateway_handler_standalone import (
-    ApiGatewayHandlerStandalone,
-    ApiGatewayWSHandlerStandalone,
-)
+    ApiGatewayHandlerStandalone, ApiGatewayWSHandlerStandalone)
 from tests.utils.aws_events_creations import (
-    create_api_gateway_event,
-    create_api_gateway_websocket_event,
-    create_lambda_context,
-)
+    create_api_gateway_event, create_api_gateway_websocket_event,
+    create_lambda_context)
 
 
 class TestApiGatewayHandlerStandalone(unittest.TestCase):
@@ -30,6 +26,31 @@ class TestApiGatewayHandlerStandalone(unittest.TestCase):
             {
                 "body": '{"path": "test", "method": "GET"}',
                 "headers": {
+                    "Access-Control-Allow-Headers": "*",
+                    "Access-Control-Allow-Methods": "*",
+                    "Access-Control-Allow-Origin": "*",
+                },
+                "statusCode": 200,
+            },
+        )
+
+    def test_handler_ok_text_plain_response(self):
+        class TestHandler(ApiGatewayHandlerStandalone):
+            headers = {"Content-Type": "text/plain"}
+
+            def perform_action(self):
+                return "hola"
+
+        handler = TestHandler.as_handler()
+        output = handler(
+            create_api_gateway_event(path="test", method="GET"), create_lambda_context()
+        )
+        self.assertEqual(
+            output,
+            {
+                "body": "hola",
+                "headers": {
+                    "Content-Type": "text/plain",
                     "Access-Control-Allow-Headers": "*",
                     "Access-Control-Allow-Methods": "*",
                     "Access-Control-Allow-Origin": "*",
