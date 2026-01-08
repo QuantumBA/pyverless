@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "pyverless"
-version = "0.0.56"
-authors = ["rperez <rperez@op2aim.io>"]
+version = "0.0.57"
+authors = ["foqum <info@foqum.io>"]
 description="A mini-framework providing tools to help you make complex APIs with serverless"
 readme="README.md"
 license="BSD"
@@ -10,7 +10,7 @@ classifiers=[
     #   3 - Alpha
     #   4 - Beta
     #   5 - Production/Stable
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     # Indicate who your project is intended for
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Build Tools",
@@ -29,7 +29,7 @@ repository = "https://github.com/QuantumBA/pyverless"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-PyJWT = "<2.0.0"
+PyJWT = ">2.0.0"
 PyYAML = ">=5.1"
 sentry-sdk = ">=0.5.1"
 python-json-logger = ">=2.0.7"
